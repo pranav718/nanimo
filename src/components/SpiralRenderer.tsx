@@ -1,5 +1,7 @@
 'use client';
 
+import { useAnimeStore } from '@/store/animeStore';
+import { AnimeMedia } from '@/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface Card {
@@ -8,21 +10,69 @@ interface Card {
     baseWidth: number;
     baseHeight: number;
     hue: number;
+    anime?: AnimeMedia;
+    loadedImage?: HTMLImageElement;
 }
 
 const CARD_WIDTH = 60;
 const CARD_HEIGHT = 90;
 const CARD_GAP = 4;
-const DEFAULT_CARD_COUNT = 2000;
 
 const LENS_RADIUS = 150;
 const LENS_POWER = 2.5;
 
-function generateGridCards(count: number, containerWidth: number, containerHeight: number): Card[] {
+const imageCache = new Map<string, HTMLImageElement>();
+
+async function preloadImagesInBatches(
+    urls: string[],
+    batchSize: number = 10,
+    onProgress?: (loaded: number, total: number) => void
+): Promise<Map<string, HTMLImageElement>> {
+    const results = new Map<string, HTMLImageElement>();
+
+    for (let i = 0; i < urls.length; i += batchSize) {
+        const batch = urls.slice(i, i + batchSize);
+
+        const promises = batch.map((url) => {
+            if (imageCache.has(url)) {
+                return Promise.resolve({ url, img: imageCache.get(url)! });
+            }
+
+            return new Promise<{ url: string; img: HTMLImageElement }>((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    imageCache.set(url, img);
+                    resolve({ url, img });
+                };
+                img.onerror = () => resolve({ url, img: null! });
+                img.src = url;
+            });
+        });
+
+        const loaded = await Promise.all(promises);
+        loaded.forEach(({ url, img }) => {
+            if (img) results.set(url, img);
+        });
+
+        onProgress?.(Math.min(i + batchSize, urls.length), urls.length);
+
+        await new Promise((r) => setTimeout(r, 0));
+    }
+
+    return results;
+}
+
+function generateGridCards(
+    animeList: AnimeMedia[],
+    containerWidth: number,
+    containerHeight: number
+): Card[] {
     const cards: Card[] = [];
     const cellWidth = CARD_WIDTH + CARD_GAP;
     const cellHeight = CARD_HEIGHT + CARD_GAP;
 
+    const count = animeList.length || 500;
     const cols = Math.ceil(Math.sqrt(count * (containerWidth / containerHeight)));
     const rows = Math.ceil(count / cols);
 
@@ -38,7 +88,11 @@ function generateGridCards(count: number, containerWidth: number, containerHeigh
         const x = offsetX + col * cellWidth + cellWidth / 2;
         const y = offsetY + row * cellHeight + cellHeight / 2;
 
-        const hue = (i * 137.5) % 360;
+        const animeIndex = i % Math.max(1, animeList.length);
+        const anime = animeList[animeIndex];
+        const hue = anime?.coverImage?.color
+            ? 0
+            : (i * 137.5) % 360;
 
         cards.push({
             x,
@@ -46,6 +100,7 @@ function generateGridCards(count: number, containerWidth: number, containerHeigh
             baseWidth: CARD_WIDTH,
             baseHeight: CARD_HEIGHT,
             hue,
+            anime,
         });
     }
 
@@ -85,11 +140,39 @@ export default function SpiralRenderer() {
     const cardsRef = useRef<Card[]>([]);
     const animationRef = useRef<number>(0);
     const mouseRef = useRef({ x: -1000, y: -1000 });
-    const [cardCount, setCardCount] = useState(DEFAULT_CARD_COUNT);
 
     const panRef = useRef({ x: 0, y: 0 });
     const isDraggingRef = useRef(false);
     const lastMouseRef = useRef({ x: 0, y: 0 });
+
+    const { animeList, isLoading, fetchTrending } = useAnimeStore();
+    const [imagesLoaded, setImagesLoaded] = useState(0);
+
+    useEffect(() => {
+        if (animeList.length === 0) {
+            fetchTrending();
+        }
+    }, [animeList.length, fetchTrending]);
+
+    useEffect(() => {
+        if (animeList.length === 0) return;
+
+        const urls = animeList
+            .map((a) => a.coverImage?.medium || a.coverImage?.large)
+            .filter((url): url is string => !!url);
+
+        preloadImagesInBatches(urls, 10, (loaded) => {
+            setImagesLoaded(loaded);
+        }).then((loadedImages) => {
+            cardsRef.current = cardsRef.current.map((card) => {
+                const url = card.anime?.coverImage?.medium || card.anime?.coverImage?.large;
+                if (url && loadedImages.has(url)) {
+                    return { ...card, loadedImage: loadedImages.get(url) };
+                }
+                return card;
+            });
+        });
+    }, [animeList]);
 
     const initCards = useCallback(() => {
         const canvas = canvasRef.current;
@@ -97,13 +180,21 @@ export default function SpiralRenderer() {
 
         const virtualWidth = 3000;
         const virtualHeight = 3000;
-        cardsRef.current = generateGridCards(cardCount, virtualWidth, virtualHeight);
+        cardsRef.current = generateGridCards(animeList, virtualWidth, virtualHeight);
+
+        cardsRef.current = cardsRef.current.map((card) => {
+            const url = card.anime?.coverImage?.medium || card.anime?.coverImage?.large;
+            if (url && imageCache.has(url)) {
+                return { ...card, loadedImage: imageCache.get(url) };
+            }
+            return card;
+        });
 
         panRef.current = {
             x: (canvas.width / window.devicePixelRatio - virtualWidth) / 2,
             y: (canvas.height / window.devicePixelRatio - virtualHeight) / 2,
         };
-    }, [cardCount]);
+    }, [animeList]);
 
     const render = useCallback(() => {
         const canvas = canvasRef.current;
@@ -145,30 +236,41 @@ export default function SpiralRenderer() {
 
             const w = card.baseWidth * lens.scale;
             const h = card.baseHeight * lens.scale;
-
-            const alpha = 0.6 + 0.4 * (lens.scale - 1) / (LENS_POWER - 1);
-            const saturation = 60 + 30 * (lens.scale - 1) / (LENS_POWER - 1);
-            const lightness = 35 + 25 * (lens.scale - 1) / (LENS_POWER - 1);
-            const gradient = ctx.createLinearGradient(
-                drawX - w / 2,
-                drawY - h / 2,
-                drawX + w / 2,
-                drawY + h / 2
-            );
-
-            gradient.addColorStop(0, `hsla(${card.hue}, ${saturation}%, ${lightness}%, ${alpha})`);
-            gradient.addColorStop(1, `hsla(${card.hue + 20}, ${saturation}%, ${lightness - 10}%, ${alpha})`);
-
-            ctx.fillStyle = gradient;
-
             const radius = Math.max(2, 6 * lens.scale);
+
+            ctx.save();
             ctx.beginPath();
             ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
-            ctx.fill();
+            ctx.clip();
+
+            if (card.loadedImage) {
+                ctx.drawImage(card.loadedImage, drawX - w / 2, drawY - h / 2, w, h);
+            } else {
+                const alpha = 0.6 + 0.4 * (lens.scale - 1) / (LENS_POWER - 1);
+                const saturation = 60 + 30 * (lens.scale - 1) / (LENS_POWER - 1);
+                const lightness = 35 + 25 * (lens.scale - 1) / (LENS_POWER - 1);
+                const gradient = ctx.createLinearGradient(
+                    drawX - w / 2,
+                    drawY - h / 2,
+                    drawX + w / 2,
+                    drawY + h / 2
+                );
+
+                gradient.addColorStop(0, `hsla(${card.hue}, ${saturation}%, ${lightness}%, ${alpha})`);
+                gradient.addColorStop(1, `hsla(${card.hue + 20}, ${saturation}%, ${lightness - 10}%, ${alpha})`);
+
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
+
+            ctx.restore();
 
             if (lens.scale > 1.1) {
-                ctx.strokeStyle = `hsla(${card.hue}, ${saturation}%, ${lightness + 30}%, ${alpha * 0.5})`;
+                const alpha = 0.6 + 0.4 * (lens.scale - 1) / (LENS_POWER - 1);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
                 ctx.lineWidth = lens.scale;
+                ctx.beginPath();
+                ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
                 ctx.stroke();
             }
         }
@@ -247,7 +349,7 @@ export default function SpiralRenderer() {
 
     useEffect(() => {
         initCards();
-    }, [cardCount, initCards]);
+    }, [animeList, initCards]);
 
     return (
         <>
@@ -261,18 +363,13 @@ export default function SpiralRenderer() {
             />
 
             <div className="fixed bottom-8 right-8 z-10 bg-black/50 backdrop-blur-sm rounded-lg p-4 pointer-events-auto">
-                <label className="text-white/70 text-xs block mb-2">
-                    Cards: {cardCount.toLocaleString()}
-                </label>
-                <input
-                    type="range"
-                    min="100"
-                    max="5000"
-                    step="100"
-                    value={cardCount}
-                    onChange={(e) => setCardCount(Number(e.target.value))}
-                    className="w-32 accent-purple-500"
-                />
+                {isLoading ? (
+                    <p className="text-white/70 text-xs">Loading anime...</p>
+                ) : (
+                    <p className="text-white/70 text-xs">
+                        {animeList.length} anime • {imagesLoaded} images loaded
+                    </p>
+                )}
             </div>
         </>
     );
