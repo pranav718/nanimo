@@ -20,7 +20,7 @@ interface StarFieldProps {
 const MAX_DPR = 2;
 
 function generateStars(width: number, height: number): Star[] {
-    const count = Math.min(300, Math.floor((width * height) / 5000));
+    const count = Math.min(800, Math.floor((width * height) / 2500));
     const stars: Star[] = [];
 
     for (let i = 0; i < count; i++) {
@@ -28,8 +28,8 @@ function generateStars(width: number, height: number): Star[] {
             x: Math.random() * width,
             y: Math.random() * height,
             z: Math.random() * 1000 + 1,
-            baseSize: Math.random() * 2 + 0.5,
-            twinkleSpeed: Math.random() * 2 + 1,
+            baseSize: Math.random() * 0.9 + 0.3,
+            twinkleSpeed: Math.random() * 3 + 0.5,
             twinkleOffset: Math.random() * Math.PI * 2,
         });
     }
