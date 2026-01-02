@@ -15,15 +15,15 @@ export default function BlackHole({ onEnter, isExpanding }: BlackHoleProps) {
     const startTimeRef = useRef<number>(0);
     const [isHovered, setIsHovered] = useState(false);
 
-    const BASE_RADIUS = 120;
-    const EXPANDED_RADIUS = 140;
+    const BASE_RADIUS = 80;
+    const EXPANDED_RADIUS = 95;
 
     const handleResize = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const dpr = Math.min(window.devicePixelRatio, MAX_DPR);
-        const size = 400;
+        const size = 500;
         canvas.width = size * dpr;
         canvas.height = size * dpr;
         canvas.style.width = `${size}px`;
@@ -42,7 +42,7 @@ export default function BlackHole({ onEnter, isExpanding }: BlackHoleProps) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const size = 400;
+        const size = 500;
         const centerX = size / 2;
         const centerY = size / 2;
         const now = performance.now();
@@ -51,39 +51,45 @@ export default function BlackHole({ onEnter, isExpanding }: BlackHoleProps) {
         ctx.clearRect(0, 0, size, size);
 
         const targetRadius = isExpanding ? EXPANDED_RADIUS : BASE_RADIUS;
-        const radius = targetRadius + (isHovered ? 5 : 0) + Math.sin(elapsed * 0.5) * 3;
+        const radius = targetRadius + (isHovered ? 4 : 0) + Math.sin(elapsed * 0.3) * 2;
 
-        const glowGradient = ctx.createRadialGradient(
-            centerX, centerY, radius * 0.8,
-            centerX, centerY, radius * 2
+        const rotation = elapsed * 0.08;
+
+        const outerGlow = ctx.createRadialGradient(
+            centerX, centerY, radius * 1.5,
+            centerX, centerY, radius * 3
         );
-        glowGradient.addColorStop(0, 'rgba(80, 60, 120, 0.3)');
-        glowGradient.addColorStop(0.5, 'rgba(40, 30, 80, 0.1)');
-        glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = glowGradient;
+        outerGlow.addColorStop(0, 'rgba(255, 180, 100, 0.08)');
+        outerGlow.addColorStop(0.5, 'rgba(255, 140, 60, 0.03)');
+        outerGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = outerGlow;
         ctx.fillRect(0, 0, size, size);
 
         ctx.save();
         ctx.translate(centerX, centerY);
-        ctx.rotate(elapsed * 0.3); 
+        ctx.rotate(rotation);
 
-        ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.4, radius * 0.4, 0, 0, Math.PI * 2);
-        const ringGradient = ctx.createLinearGradient(-radius * 1.4, 0, radius * 1.4, 0);
-        ringGradient.addColorStop(0, 'rgba(255, 150, 100, 0.0)');
-        ringGradient.addColorStop(0.3, 'rgba(255, 180, 120, 0.4)');
-        ringGradient.addColorStop(0.5, 'rgba(255, 200, 150, 0.6)');
-        ringGradient.addColorStop(0.7, 'rgba(255, 180, 120, 0.4)');
-        ringGradient.addColorStop(1, 'rgba(255, 150, 100, 0.0)');
-        ctx.strokeStyle = ringGradient;
-        ctx.lineWidth = 8 + Math.sin(elapsed * 2) * 2;
-        ctx.stroke();
+        const drawAccretionArc = (yOffset: number, radiusMultiplier: number, alpha: number, thickness: number) => {
+            ctx.beginPath();
+            ctx.ellipse(0, yOffset, radius * radiusMultiplier, radius * 0.15, 0, Math.PI, 0);
 
-        ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.2, radius * 0.3, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 220, 180, 0.3)';
-        ctx.lineWidth = 4;
-        ctx.stroke();
+            const gradient = ctx.createLinearGradient(-radius * radiusMultiplier, 0, radius * radiusMultiplier, 0);
+            gradient.addColorStop(0, `rgba(80, 40, 20, 0)`);
+            gradient.addColorStop(0.15, `rgba(180, 100, 50, ${alpha * 0.6})`);
+            gradient.addColorStop(0.3, `rgba(255, 180, 100, ${alpha})`);
+            gradient.addColorStop(0.5, `rgba(255, 240, 200, ${alpha * 1.2})`);
+            gradient.addColorStop(0.7, `rgba(255, 180, 100, ${alpha})`);
+            gradient.addColorStop(0.85, `rgba(180, 100, 50, ${alpha * 0.6})`);
+            gradient.addColorStop(1, `rgba(80, 40, 20, 0)`);
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = thickness;
+            ctx.stroke();
+        };
+
+        drawAccretionArc(-radius * 0.95, 1.8, 0.7, 12 + Math.sin(elapsed * 1.5) * 2);
+        drawAccretionArc(-radius * 0.85, 1.6, 0.5, 8);
+        drawAccretionArc(-radius * 0.75, 1.4, 0.3, 5);
 
         ctx.restore();
 
@@ -92,9 +98,9 @@ export default function BlackHole({ onEnter, isExpanding }: BlackHoleProps) {
             centerX, centerY, radius
         );
         coreGradient.addColorStop(0, '#000000');
-        coreGradient.addColorStop(0.7, '#010103');
-        coreGradient.addColorStop(0.85, '#0a0812');
-        coreGradient.addColorStop(1, 'rgba(20, 15, 30, 0.8)');
+        coreGradient.addColorStop(0.8, '#000000');
+        coreGradient.addColorStop(0.92, '#050505');
+        coreGradient.addColorStop(1, '#0a0a0a');
 
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
@@ -102,23 +108,70 @@ export default function BlackHole({ onEnter, isExpanding }: BlackHoleProps) {
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius * 1.1, 0, Math.PI * 2);
-        const distortGradient = ctx.createRadialGradient(
-            centerX, centerY, radius,
-            centerX, centerY, radius * 1.2
+        ctx.arc(centerX, centerY, radius * 1.02, 0, Math.PI * 2);
+        const photonRing = ctx.createRadialGradient(
+            centerX, centerY, radius * 0.98,
+            centerX, centerY, radius * 1.08
         );
-        distortGradient.addColorStop(0, 'rgba(100, 80, 140, 0.3)');
-        distortGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.strokeStyle = distortGradient;
-        ctx.lineWidth = radius * 0.15;
+        photonRing.addColorStop(0, 'rgba(255, 200, 150, 0)');
+        photonRing.addColorStop(0.4, 'rgba(255, 220, 180, 0.6)');
+        photonRing.addColorStop(0.5, 'rgba(255, 240, 220, 0.9)');
+        photonRing.addColorStop(0.6, 'rgba(255, 220, 180, 0.6)');
+        photonRing.addColorStop(1, 'rgba(255, 180, 120, 0)');
+        ctx.strokeStyle = photonRing;
+        ctx.lineWidth = radius * 0.08;
         ctx.stroke();
 
-        if (isExpanding) {
-            const pulseAlpha = 0.3 + Math.sin(elapsed * 15) * 0.2;
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(rotation);
+
+        for (let i = 0; i < 5; i++) {
+            const diskRadius = radius * (1.3 + i * 0.25);
+            const diskThickness = 25 - i * 4;
+            const diskAlpha = 0.9 - i * 0.15;
+
             ctx.beginPath();
-            ctx.arc(centerX, centerY, radius * 1.3, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(180, 140, 220, ${pulseAlpha})`;
-            ctx.lineWidth = 3;
+            ctx.ellipse(0, 0, diskRadius, radius * 0.1, 0, 0, Math.PI);
+
+            const diskGradient = ctx.createLinearGradient(-diskRadius, 0, diskRadius, 0);
+            diskGradient.addColorStop(0, `rgba(60, 30, 15, 0)`);
+            diskGradient.addColorStop(0.1, `rgba(120, 60, 30, ${diskAlpha * 0.4})`);
+            diskGradient.addColorStop(0.25, `rgba(200, 120, 60, ${diskAlpha * 0.8})`);
+            diskGradient.addColorStop(0.4, `rgba(255, 180, 100, ${diskAlpha})`);
+            diskGradient.addColorStop(0.5, `rgba(255, 220, 180, ${diskAlpha})`);
+            diskGradient.addColorStop(0.6, `rgba(255, 180, 100, ${diskAlpha})`);
+            diskGradient.addColorStop(0.75, `rgba(200, 120, 60, ${diskAlpha * 0.8})`);
+            diskGradient.addColorStop(0.9, `rgba(120, 60, 30, ${diskAlpha * 0.4})`);
+            diskGradient.addColorStop(1, `rgba(60, 30, 15, 0)`);
+
+            ctx.strokeStyle = diskGradient;
+            ctx.lineWidth = diskThickness;
+            ctx.stroke();
+        }
+
+        drawAccretionArc(radius * 0.6, 1.6, 0.4, 6);
+
+        ctx.restore();
+
+        const innerGlow = ctx.createRadialGradient(
+            centerX, centerY, radius * 0.5,
+            centerX, centerY, radius * 1.2
+        );
+        innerGlow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        innerGlow.addColorStop(0.8, 'rgba(0, 0, 0, 0)');
+        innerGlow.addColorStop(1, 'rgba(255, 200, 150, 0.1)');
+        ctx.fillStyle = innerGlow;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (isExpanding) {
+            const pulseAlpha = 0.4 + Math.sin(elapsed * 12) * 0.2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 1.5, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255, 200, 150, ${pulseAlpha})`;
+            ctx.lineWidth = 2;
             ctx.stroke();
         }
 
@@ -142,8 +195,8 @@ export default function BlackHole({ onEnter, isExpanding }: BlackHoleProps) {
             ref={canvasRef}
             className="cursor-pointer transition-transform duration-200"
             style={{
-                width: 400,
-                height: 400,
+                width: 500,
+                height: 500,
                 transform: isHovered ? 'scale(1.02)' : 'scale(1)',
             }}
             onClick={onEnter}
