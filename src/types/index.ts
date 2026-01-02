@@ -5,6 +5,7 @@ export interface MediaTitle {
 }
 
 export interface MediaCoverImage {
+    extraLarge: string | null;
     large: string | null;
     medium: string | null;
     color: string | null;

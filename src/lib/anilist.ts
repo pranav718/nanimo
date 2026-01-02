@@ -19,6 +19,7 @@ const TRENDING_QUERY = `
           native
         }
         coverImage {
+          extraLarge
           large
           medium
           color
@@ -35,19 +36,19 @@ const TRENDING_QUERY = `
 `;
 
 interface PageInfo {
-    total: number;
-    currentPage: number;
-    lastPage: number;
-    hasNextPage: boolean;
+  total: number;
+  currentPage: number;
+  lastPage: number;
+  hasNextPage: boolean;
 }
 
 interface TrendingResponse {
-    data: {
-        Page: {
-            pageInfo: PageInfo;
-            media: AnimeMedia[];
-        };
+  data: {
+    Page: {
+      pageInfo: PageInfo;
+      media: AnimeMedia[];
     };
+  };
 }
 
 /**
@@ -58,41 +59,41 @@ interface TrendingResponse {
  * @param perPage - Items per page (max 50)
  */
 export async function fetchTrendingMedia(
-    type: MediaType = 'ANIME',
-    page: number = 1,
-    perPage: number = 50
+  type: MediaType = 'ANIME',
+  page: number = 1,
+  perPage: number = 50
 ): Promise<{ media: AnimeMedia[]; pageInfo: PageInfo }> {
-    const response = await fetch(ANILIST_API, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: TRENDING_QUERY,
-            variables: { page, perPage, type },
-        }),
-    });
+  const response = await fetch(ANILIST_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+      query: TRENDING_QUERY,
+      variables: { page, perPage, type },
+    }),
+  });
 
-    if (!response.ok) {
-        throw new Error(`AniList API error: ${response.status}`);
-    }
+  if (!response.ok) {
+    throw new Error(`AniList API error: ${response.status}`);
+  }
 
-    const json: TrendingResponse = await response.json();
-    return {
-        media: json.data.Page.media,
-        pageInfo: json.data.Page.pageInfo,
-    };
+  const json: TrendingResponse = await response.json();
+  return {
+    media: json.data.Page.media,
+    pageInfo: json.data.Page.pageInfo,
+  };
 }
 
 export async function fetchAllTrendingMedia(
-    type: MediaType = 'ANIME',
-    totalPages: number = 10
+  type: MediaType = 'ANIME',
+  totalPages: number = 10
 ): Promise<AnimeMedia[]> {
-    const pagePromises = Array.from({ length: totalPages }, (_, i) =>
-        fetchTrendingMedia(type, i + 1, 50)
-    );
+  const pagePromises = Array.from({ length: totalPages }, (_, i) =>
+    fetchTrendingMedia(type, i + 1, 50)
+  );
 
-    const results = await Promise.all(pagePromises);
-    return results.flatMap((r) => r.media);
+  const results = await Promise.all(pagePromises);
+  return results.flatMap((r) => r.media);
 }

@@ -12,13 +12,13 @@ interface Card {
     loadedImage?: HTMLImageElement;
 }
 
-const DOT_SIZE = 3;           
-const POSTER_WIDTH = 60;      
-const POSTER_HEIGHT = 90;     
-const CARD_GAP = 8;           
+const DOT_SIZE = 9;
+const POSTER_WIDTH = 120;
+const POSTER_HEIGHT = 180;
+const CARD_GAP = 4;
 
-const LENS_RADIUS = 180;      
-const LENS_POWER = 1;         
+const LENS_RADIUS = 180;
+const LENS_POWER = 1;
 
 const imageCache = new Map<string, HTMLImageElement>();
 
@@ -129,7 +129,7 @@ export default function SpiralRenderer() {
         cardsRef.current = generateGridCards(animeList, virtualWidth, virtualHeight);
 
         cardsRef.current = cardsRef.current.map((card) => {
-            const url = card.anime?.coverImage?.medium || card.anime?.coverImage?.large;
+            const url = card.anime?.coverImage?.extraLarge || card.anime?.coverImage?.large;
             if (url && imageCache.has(url)) {
                 return { ...card, loadedImage: imageCache.get(url) };
             }
@@ -180,7 +180,7 @@ export default function SpiralRenderer() {
             const showImage = lens.t > 0.3 && card.loadedImage;
 
             if (lens.t > 0.2 && card.anime && !card.loadedImage) {
-                const url = card.anime.coverImage?.medium || card.anime.coverImage?.large;
+                const url = card.anime.coverImage?.extraLarge || card.anime.coverImage?.large;
                 if (url && !loadingRef.current.has(url)) {
                     loadingRef.current.add(url);
                     loadImageOnDemand(url).then((img) => {
