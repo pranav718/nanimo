@@ -206,6 +206,66 @@ void main() {
 }
 `;
 
+const warpVertexShader = `
+varying vec2 vUv;
+void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const warpFragmentShader = `
+uniform float warpProgress;
+uniform float time;
+uniform vec2 resolution;
+
+varying vec2 vUv;
+
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+void main() {
+    vec2 uv = vUv * 2.0 - 1.0;
+    uv.x *= resolution.x / resolution.y;
+    
+    float angle = atan(uv.y, uv.x);
+    float dist = length(uv);
+    
+    float sideMask = 1.0 - smoothstep(0.0, 0.5, abs(cos(angle)));
+    
+    float tunnelDist = 0.3 / dist;
+    
+    float starAngle = angle * 30.0;
+    float starId = floor(starAngle);
+    float starFrac = fract(starAngle);
+    
+    float starRandom = random(vec2(starId, 0.0));
+    float starBrightness = step(0.85, starRandom);
+    
+    float elongation = warpProgress * 15.0;
+    float streakPattern = smoothstep(0.4 - elongation * 0.02, 0.5, starFrac) * 
+                          smoothstep(0.6 + elongation * 0.02, 0.5, starFrac);
+    
+    float radialMove = fract(tunnelDist * 0.5 - time * 2.0 * warpProgress);
+    float radialFade = smoothstep(0.0, 0.3, radialMove) * smoothstep(1.0, 0.7, radialMove);
+    
+    float star = streakPattern * radialFade * starBrightness * sideMask;
+    star *= smoothstep(0.0, 0.2, warpProgress); 
+    star *= (1.0 - smoothstep(0.8, 1.0, warpProgress)); 
+    
+    vec3 starColor = mix(vec3(0.7, 0.8, 1.0), vec3(1.0), starRandom);
+    
+    float centerGlow = (1.0 - dist) * warpProgress * 0.5;
+    vec3 glowColor = vec3(1.0, 0.95, 0.9);
+    
+    vec3 finalColor = star * starColor * 2.0 + centerGlow * glowColor;
+    float alpha = star + centerGlow * 0.5;
+    
+    gl_FragColor = vec4(finalColor, alpha * warpProgress);
+}
+`;
+
 class Observer {
     position: THREE.Vector3;
     direction: THREE.Vector3;
@@ -286,11 +346,20 @@ export default function BlackHoleScene({ onEnter, isExpanding }: BlackHoleSceneP
     const startTimeRef = useRef<number>(0);
     const isInitializedRef = useRef(false);
 
-    // Mouse drag controls
     const isDraggingRef = useRef(false);
     const lastMouseRef = useRef({ x: 0, y: 0 });
     const pitchRef = useRef(0);
     const yawRef = useRef(0);
+
+    const isWarpingRef = useRef(false);
+    const warpProgressRef = useRef(0);
+    const warpStartTimeRef = useRef(0);
+    const warpStartPitchRef = useRef(0);
+    const warpStartYawRef = useRef(0);
+    const warpSceneRef = useRef<THREE.Scene | null>(null);
+    const warpCameraRef = useRef<THREE.OrthographicCamera | null>(null);
+    const warpUniformsRef = useRef<Record<string, THREE.IUniform>>({});
+    const onEnterCalledRef = useRef(false);
 
     const init = useCallback(() => {
         if (!containerRef.current || isInitializedRef.current) return;
@@ -363,17 +432,83 @@ export default function BlackHoleScene({ onEnter, isExpanding }: BlackHoleSceneP
         observer.distance = 10;
         observerRef.current = observer;
 
+        const warpScene = new THREE.Scene();
+        const warpCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        warpSceneRef.current = warpScene;
+        warpCameraRef.current = warpCamera;
+
+        const warpUniforms: Record<string, THREE.IUniform> = {
+            warpProgress: { value: 0.0 },
+            time: { value: 0.0 },
+            resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        };
+        warpUniformsRef.current = warpUniforms;
+
+        const warpMaterial = new THREE.ShaderMaterial({
+            uniforms: warpUniforms,
+            vertexShader: warpVertexShader,
+            fragmentShader: warpFragmentShader,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+        });
+
+        const warpMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), warpMaterial);
+        warpScene.add(warpMesh);
+
         startTimeRef.current = performance.now();
     }, []);
 
     const animate = useCallback(() => {
-        if (!composerRef.current || !observerRef.current) return;
+        if (!composerRef.current || !observerRef.current || !rendererRef.current) return;
 
         const now = performance.now();
         const delta = (now - startTimeRef.current) / 1000;
         const time = delta;
 
         const observer = observerRef.current;
+
+        if (isWarpingRef.current) {
+            const warpDuration = 2000; 
+            const warpElapsed = now - warpStartTimeRef.current;
+            const warpProgress = Math.min(warpElapsed / warpDuration, 1.0);
+            warpProgressRef.current = warpProgress;
+
+            const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+            const easeInOutCubic = (t: number) =>
+                t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            if (warpProgress < 0.3) {
+                const rotationProgress = easeOutCubic(warpProgress / 0.3);
+                const currentPitch = warpStartPitchRef.current * (1 - rotationProgress);
+                const currentYaw = warpStartYawRef.current * (1 - rotationProgress);
+                pitchRef.current = currentPitch;
+                yawRef.current = currentYaw;
+                observer.setDirection(currentPitch, currentYaw);
+            } else {
+                pitchRef.current = 0;
+                yawRef.current = 0;
+                observer.setDirection(0, 0);
+            }
+            if (warpProgress >= 0.3) {
+                const moveProgress = (warpProgress - 0.3) / 0.7;
+                const easedMove = easeInOutCubic(moveProgress);
+
+                const startDistance = 10;
+                const endDistance = 2;
+                observer.distance = startDistance - (startDistance - endDistance) * easedMove;
+            }
+            if (warpUniformsRef.current.warpProgress) {
+                const warpVisualProgress = warpProgress < 0.2 ? 0 :
+                    (warpProgress - 0.2) / 0.6;
+                warpUniformsRef.current.warpProgress.value = Math.min(warpVisualProgress, 1);
+                warpUniformsRef.current.time.value = time;
+                warpUniformsRef.current.resolution.value.set(window.innerWidth, window.innerHeight);
+            }
+            if (warpProgress >= 0.8 && !onEnterCalledRef.current) {
+                onEnterCalledRef.current = true;
+                onEnter?.();
+            }
+        }
+
         observer.update(0.016);
 
         const uniforms = uniformsRef.current;
@@ -386,8 +521,9 @@ export default function BlackHoleScene({ onEnter, isExpanding }: BlackHoleSceneP
         uniforms.fov.value = observer.fov;
 
         composerRef.current.render();
+
         animationRef.current = requestAnimationFrame(animate);
-    }, []);
+    }, [onEnter]);
 
     const handleResize = useCallback(() => {
         if (!rendererRef.current || !composerRef.current) return;
@@ -421,10 +557,15 @@ export default function BlackHoleScene({ onEnter, isExpanding }: BlackHoleSceneP
     }, []);
 
     const handleClick = useCallback(() => {
-        if (!isDraggingRef.current) {
-            onEnter?.();
+        if (!isDraggingRef.current && !isWarpingRef.current) {
+            isWarpingRef.current = true;
+            warpStartTimeRef.current = performance.now();
+            warpStartPitchRef.current = pitchRef.current;
+            warpStartYawRef.current = yawRef.current;
+            warpProgressRef.current = 0;
+            onEnterCalledRef.current = false;
         }
-    }, [onEnter]);
+    }, []);
 
     useEffect(() => {
         init();
