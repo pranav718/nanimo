@@ -32,7 +32,7 @@ export default function LandingPage() {
 
         setTimeout(() => {
             router.push('/explore');
-        }, 800);
+        }, 500);
     }, [router, isEntering]);
 
     const ctaText = mediaType === 'ANIME'
@@ -85,9 +85,6 @@ export default function LandingPage() {
                 </p>
             </div>
 
-            {isEntering && (
-                <div className="fixed inset-0 z-20 bg-white/10 animate-pulse pointer-events-none" />
-            )}
         </main>
     );
 }
