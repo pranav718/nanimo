@@ -111,6 +111,10 @@ export default function SpiralRenderer() {
     const isDraggingRef = useRef(false);
     const lastMouseRef = useRef({ x: 0, y: 0 });
 
+    const entranceStartRef = useRef<number>(0);
+    const entranceCompleteRef = useRef(false);
+    const ENTRANCE_DURATION = 1800; 
+
     const { animeList, isLoading, fetchTrending } = useAnimeStore();
     const [, forceUpdate] = useState(0);
 
@@ -153,11 +157,25 @@ export default function SpiralRenderer() {
         const width = canvas.width / dpr;
         const height = canvas.height / dpr;
 
+        const now = performance.now();
+        if (entranceStartRef.current === 0) {
+            entranceStartRef.current = now;
+        }
+
+        const elapsed = now - entranceStartRef.current;
+        const entranceProgress = Math.min(1, elapsed / ENTRANCE_DURATION);
+
+        const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+        const easedProgress = easeOutQuart(entranceProgress);
+
         ctx.fillStyle = '#030305';
         ctx.fillRect(0, 0, width, height);
 
         const mouseX = mouseRef.current.x - panRef.current.x;
         const mouseY = mouseRef.current.y - panRef.current.y;
+
+        const virtualCenterX = 1250;
+        const virtualCenterY = 1250;
 
         const cardsWithLens = cardsRef.current.map((card, index) => {
             const lens = getLensEffect(card.x, card.y, mouseX, mouseY);
@@ -165,8 +183,20 @@ export default function SpiralRenderer() {
         }).sort((a, b) => a.lens.t - b.lens.t);
 
         for (const { card, lens, index } of cardsWithLens) {
-            const drawX = card.x + panRef.current.x + lens.offsetX;
-            const drawY = card.y + panRef.current.y + lens.offsetY;
+            const distFromCenter = Math.sqrt(
+                Math.pow(card.x - virtualCenterX, 2) +
+                Math.pow(card.y - virtualCenterY, 2)
+            );
+            const maxDist = 1800;
+            const staggerDelay = (distFromCenter / maxDist) * 0.3;
+
+            const cardProgress = Math.max(0, Math.min(1, (easedProgress - staggerDelay) / (1 - staggerDelay)));
+
+            const animatedX = virtualCenterX + (card.x - virtualCenterX) * cardProgress;
+            const animatedY = virtualCenterY + (card.y - virtualCenterY) * cardProgress;
+
+            const drawX = animatedX + panRef.current.x + lens.offsetX;
+            const drawY = animatedY + panRef.current.y + lens.offsetY;
 
             const margin = POSTER_WIDTH + LENS_RADIUS;
             if (drawX < -margin || drawX > width + margin ||
@@ -174,8 +204,12 @@ export default function SpiralRenderer() {
                 continue;
             }
 
-            const w = DOT_SIZE + (POSTER_WIDTH - DOT_SIZE) * lens.t;
-            const h = DOT_SIZE + (POSTER_HEIGHT - DOT_SIZE) * lens.t;
+            const scaleProgress = Math.pow(cardProgress, 0.5);
+            const baseW = DOT_SIZE * scaleProgress;
+            const baseH = DOT_SIZE * scaleProgress;
+
+            const w = baseW + (POSTER_WIDTH - DOT_SIZE) * lens.t * cardProgress;
+            const h = baseH + (POSTER_HEIGHT - DOT_SIZE) * lens.t * cardProgress;
 
             const showImage = lens.t > 0.3 && card.loadedImage;
 
@@ -207,6 +241,65 @@ export default function SpiralRenderer() {
                     ctx.beginPath();
                     ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
                     ctx.stroke();
+                }
+
+                if (lens.t > 0.7 && card.anime) {
+                    const titleOpacity = (lens.t - 0.7) / 0.3;
+                    const title = card.anime.title?.english || card.anime.title?.romaji || '';
+
+                    if (title) {
+                        const gradientHeight = h * 0.4;
+                        const gradient = ctx.createLinearGradient(
+                            drawX, drawY + h / 2 - gradientHeight,
+                            drawX, drawY + h / 2
+                        );
+                        gradient.addColorStop(0, `rgba(0, 0, 0, 0)`);
+                        gradient.addColorStop(1, `rgba(0, 0, 0, ${0.85 * titleOpacity})`);
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
+                        ctx.clip();
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(drawX - w / 2, drawY + h / 2 - gradientHeight, w, gradientHeight);
+                        ctx.restore();
+
+                        const fontSize = Math.max(9, Math.min(12, w / 10));
+                        ctx.font = `600 ${fontSize}px Inter, system-ui, sans-serif`;
+                        ctx.fillStyle = `rgba(255, 255, 255, ${titleOpacity * 0.95})`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+
+                        let displayTitle = title;
+                        const maxWidth = w - 12;
+                        while (ctx.measureText(displayTitle).width > maxWidth && displayTitle.length > 3) {
+                            displayTitle = displayTitle.slice(0, -4) + '...';
+                        }
+
+                        const slideOffset = (1 - titleOpacity) * 8;
+                        ctx.fillText(displayTitle, drawX, drawY + h / 2 - 6 + slideOffset);
+
+                        if (card.anime.averageScore) {
+                            const score = card.anime.averageScore;
+                            const badgeSize = Math.max(16, w / 6);
+                            const badgeX = drawX + w / 2 - badgeSize / 2 - 4;
+                            const badgeY = drawY - h / 2 + 4;
+
+                            const scoreColor = score >= 75 ? '#22c55e' : score >= 50 ? '#eab308' : '#ef4444';
+                            ctx.fillStyle = `rgba(0, 0, 0, ${0.7 * titleOpacity})`;
+                            ctx.beginPath();
+                            ctx.roundRect(badgeX, badgeY, badgeSize, badgeSize * 0.7, 3);
+                            ctx.fill();
+
+                            ctx.font = `700 ${badgeSize * 0.4}px Inter, system-ui, sans-serif`;
+                            ctx.fillStyle = scoreColor;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.globalAlpha = titleOpacity;
+                            ctx.fillText(`${score}`, badgeX + badgeSize / 2, badgeY + badgeSize * 0.35);
+                            ctx.globalAlpha = 1;
+                        }
+                    }
                 }
             } else {
                 const alpha = 0.3 + 0.5 * lens.t;
