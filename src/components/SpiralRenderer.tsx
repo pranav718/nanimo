@@ -10,6 +10,9 @@ interface Card {
     hue: number;
     anime?: AnimeMedia;
     loadedImage?: HTMLImageElement;
+    starBrightness: number;
+    twinkleSpeed: number;
+    starSize: number;
 }
 
 const DOT_SIZE = 9;
@@ -68,7 +71,11 @@ function generateGridCards(
         const anime = animeList[animeIndex];
         const hue = (i * 137.5) % 360;
 
-        cards.push({ x, y, hue, anime });
+        const starBrightness = 0.3 + Math.random() * 0.7;
+        const twinkleSpeed = 0.5 + Math.random() * 2;
+        const starSize = 1 + Math.random() * 2;
+
+        cards.push({ x, y, hue, anime, starBrightness, twinkleSpeed, starSize });
     }
 
     return cards;
@@ -113,7 +120,7 @@ export default function SpiralRenderer() {
 
     const entranceStartRef = useRef<number>(0);
     const entranceCompleteRef = useRef(false);
-    const ENTRANCE_DURATION = 1800; 
+    const ENTRANCE_DURATION = 1800;
 
     const { animeList, isLoading, fetchTrending } = useAnimeStore();
     const [, forceUpdate] = useState(0);
@@ -302,17 +309,38 @@ export default function SpiralRenderer() {
                     }
                 }
             } else {
-                const alpha = 0.3 + 0.5 * lens.t;
-                const saturation = 50 + 30 * lens.t;
-                const lightness = 30 + 30 * lens.t;
+                const time = now / 1000;
+                const twinkle = 0.5 + 0.5 * Math.sin(time * card.twinkleSpeed + card.x * 0.01);
+                const brightness = card.starBrightness * (0.6 + 0.4 * twinkle);
 
-                ctx.fillStyle = `hsla(${card.hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+                const starRadius = card.starSize * (1 + lens.t * 3);
 
-                if (lens.t < 0.1) {
+                if (lens.t < 0.15) {
+                    const glowRadius = starRadius * 3;
+
+                    const glow = ctx.createRadialGradient(
+                        drawX, drawY, 0,
+                        drawX, drawY, glowRadius
+                    );
+                    glow.addColorStop(0, `rgba(200, 220, 255, ${brightness * 0.8})`);
+                    glow.addColorStop(0.3, `rgba(150, 180, 255, ${brightness * 0.3})`);
+                    glow.addColorStop(1, 'rgba(100, 150, 255, 0)');
+
+                    ctx.fillStyle = glow;
                     ctx.beginPath();
-                    ctx.arc(drawX, drawY, w / 2, 0, Math.PI * 2);
+                    ctx.arc(drawX, drawY, glowRadius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, starRadius, 0, Math.PI * 2);
                     ctx.fill();
                 } else {
+                    const alpha = 0.3 + 0.5 * lens.t;
+                    const saturation = 50 + 30 * lens.t;
+                    const lightness = 30 + 30 * lens.t;
+
+                    ctx.fillStyle = `hsla(${card.hue}, ${saturation}%, ${lightness}%, ${alpha})`;
                     const radius = Math.max(2, w / 4);
                     ctx.beginPath();
                     ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
