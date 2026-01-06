@@ -14,9 +14,9 @@ interface Card {
     starSize: number;
 }
 
-const POSTER_WIDTH = 85;
-const POSTER_HEIGHT = 120;
-const LENS_RADIUS = 280;
+const POSTER_WIDTH = 100;
+const POSTER_HEIGHT = 140;
+const LENS_RADIUS = 160;
 
 const imageCache = new Map<string, HTMLImageElement>();
 
@@ -43,7 +43,7 @@ function generateUniformStars(
     height: number
 ): Card[] {
     const cards: Card[] = [];
-    const count = Math.max(animeList.length, 300);
+    const count = Math.max(animeList.length, 200);
 
     const cols = Math.ceil(Math.sqrt(count * (width / height)));
     const rows = Math.ceil(count / cols);
@@ -58,8 +58,8 @@ function generateUniformStars(
         const baseX = col * cellWidth + cellWidth / 2;
         const baseY = row * cellHeight + cellHeight / 2;
 
-        const jitterX = (Math.random() - 0.5) * cellWidth * 0.7;
-        const jitterY = (Math.random() - 0.5) * cellHeight * 0.7;
+        const jitterX = (Math.random() - 0.5) * cellWidth * 0.5;
+        const jitterY = (Math.random() - 0.5) * cellHeight * 0.5;
 
         const x = baseX + jitterX;
         const y = baseY + jitterY;
@@ -71,32 +71,13 @@ function generateUniformStars(
             x,
             y,
             anime,
-            brightness: 0.4 + Math.random() * 0.6,
-            twinkleSpeed: 0.8 + Math.random() * 2,
-            starSize: 1 + Math.random() * 1.5,
+            brightness: 0.3 + Math.random() * 0.7,
+            twinkleSpeed: 0.5 + Math.random() * 1.5,
+            starSize: 1.2 + Math.random() * 1.3,
         });
     }
 
     return cards;
-}
-
-function getBloomEffect(
-    cardX: number,
-    cardY: number,
-    mouseX: number,
-    mouseY: number
-): { t: number; angle: number; distance: number } {
-    const dx = cardX - mouseX;
-    const dy = cardY - mouseY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const angle = Math.atan2(dy, dx);
-
-    if (distance > LENS_RADIUS) {
-        return { t: 0, angle, distance };
-    }
-
-    const t = 1 - Math.pow(distance / LENS_RADIUS, 1.2);
-    return { t: Math.max(0, t), angle, distance };
 }
 
 export default function SpiralRenderer() {
@@ -146,73 +127,53 @@ export default function SpiralRenderer() {
 
         timeRef.current = performance.now() / 1000;
 
-        smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * 0.12;
-        smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * 0.12;
+        smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * 0.18;
+        smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * 0.18;
 
-        ctx.fillStyle = '#0a0a0c';
+        ctx.fillStyle = '#08080a';
         ctx.fillRect(0, 0, width, height);
 
         const mouseX = smoothMouseRef.current.x;
         const mouseY = smoothMouseRef.current.y;
 
-        const cardsWithEffect = cardsRef.current.map((card, index) => {
-            const effect = getBloomEffect(card.x, card.y, mouseX, mouseY);
-            return { card, effect, index };
+        const cardsWithDistance = cardsRef.current.map((card, index) => {
+            const dx = card.x - mouseX;
+            const dy = card.y - mouseY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return { card, index, distance };
         });
 
-        cardsWithEffect.sort((a, b) => {
-            if (a.effect.t === 0 && b.effect.t === 0) return 0;
-            if (a.effect.t === 0) return -1;
-            if (b.effect.t === 0) return 1;
-            return a.effect.distance - b.effect.distance;
-        });
+        cardsWithDistance.sort((a, b) => b.distance - a.distance);
 
-        for (const { card, effect, index } of cardsWithEffect) {
-            const { t, angle, distance } = effect;
+        for (const { card, index, distance } of cardsWithDistance) {
+            const isInLens = distance < LENS_RADIUS;
 
-            let drawX = card.x;
-            let drawY = card.y;
-
-            if (t > 0.1) {
-                const pushAmount = t * 60;
-                drawX = card.x + Math.cos(angle) * pushAmount;
-                drawY = card.y + Math.sin(angle) * pushAmount;
-            }
-
-            if (t < 0.15) {
+            if (!isInLens) {
                 const twinkle = 0.5 + 0.5 * Math.sin(
-                    timeRef.current * card.twinkleSpeed + card.x * 0.02
+                    timeRef.current * card.twinkleSpeed + card.x * 0.01
                 );
-                const brightness = card.brightness * (0.6 + 0.4 * twinkle);
-                const starRadius = card.starSize * (1 + t * 3);
-
-                const glowRadius = starRadius * 3;
-                const glow = ctx.createRadialGradient(
-                    drawX, drawY, 0,
-                    drawX, drawY, glowRadius
-                );
-                glow.addColorStop(0, `rgba(255, 255, 255, ${brightness})`);
-                glow.addColorStop(0.4, `rgba(200, 220, 255, ${brightness * 0.3})`);
-                glow.addColorStop(1, 'rgba(150, 180, 220, 0)');
-
-                ctx.fillStyle = glow;
-                ctx.beginPath();
-                ctx.arc(drawX, drawY, glowRadius, 0, Math.PI * 2);
-                ctx.fill();
+                const brightness = card.brightness * (0.5 + 0.5 * twinkle);
 
                 ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
                 ctx.beginPath();
-                ctx.arc(drawX, drawY, starRadius * 0.6, 0, Math.PI * 2);
+                ctx.arc(card.x, card.y, card.starSize, 0, Math.PI * 2);
                 ctx.fill();
+
+                if (brightness > 0.6) {
+                    ctx.fillStyle = `rgba(200, 220, 255, ${(brightness - 0.6) * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(card.x, card.y, card.starSize * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             } else {
-                const cardT = (t - 0.15) / 0.85;
-                const sizeFactor = Math.pow(cardT, 0.6);
+                const normalizedDist = distance / LENS_RADIUS;
+                const t = 1 - Math.pow(normalizedDist, 0.6);
 
-                const centerBonus = 1 + (1 - distance / LENS_RADIUS) * 0.5;
-                const w = (8 + (POSTER_WIDTH - 8) * sizeFactor) * centerBonus;
-                const h = (8 + (POSTER_HEIGHT - 8) * sizeFactor) * centerBonus;
+                const sizeMultiplier = 0.3 + t * 0.7;
+                const w = POSTER_WIDTH * sizeMultiplier;
+                const h = POSTER_HEIGHT * sizeMultiplier;
 
-                if (cardT > 0.1 && card.anime && !card.loadedImage) {
+                if (t > 0.2 && card.anime && !card.loadedImage) {
                     const url = card.anime.coverImage?.extraLarge || card.anime.coverImage?.large;
                     if (url && !loadingRef.current.has(url)) {
                         loadingRef.current.add(url);
@@ -225,54 +186,44 @@ export default function SpiralRenderer() {
                     }
                 }
 
-                const showImage = cardT > 0.2 && card.loadedImage;
-                const radius = Math.max(3, 10 * cardT);
-                const rotation = (1 - cardT) * (angle + Math.PI / 2) * 0.3;
+                const radius = Math.max(4, 10 * t);
 
                 ctx.save();
-                ctx.translate(drawX, drawY);
-                ctx.rotate(rotation);
 
-                if (showImage && card.loadedImage) {
-                    ctx.globalAlpha = Math.min(1, cardT * 1.8);
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 15 * t;
+                ctx.shadowOffsetY = 5 * t;
+
+                if (card.loadedImage && t > 0.15) {
+                    ctx.globalAlpha = Math.min(1, t * 1.5);
+
                     ctx.beginPath();
-                    ctx.roundRect(-w / 2, -h / 2, w, h, radius);
+                    ctx.roundRect(card.x - w / 2, card.y - h / 2, w, h, radius);
                     ctx.clip();
-                    ctx.drawImage(card.loadedImage, -w / 2, -h / 2, w, h);
+                    ctx.drawImage(card.loadedImage, card.x - w / 2, card.y - h / 2, w, h);
 
-                    if (cardT > 0.5) {
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${cardT * 0.5})`;
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+
+                    if (t > 0.6) {
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${(t - 0.6) * 1.2})`;
                         ctx.lineWidth = 2;
                         ctx.stroke();
                     }
                 } else {
-                    const alpha = 0.4 + 0.5 * cardT;
-                    ctx.fillStyle = `rgba(40, 50, 70, ${alpha})`;
+                    const alpha = 0.2 + 0.7 * t;
+                    ctx.fillStyle = `rgba(30, 35, 50, ${alpha})`;
                     ctx.beginPath();
-                    ctx.roundRect(-w / 2, -h / 2, w, h, radius);
+                    ctx.roundRect(card.x - w / 2, card.y - h / 2, w, h, radius);
                     ctx.fill();
 
-                    ctx.strokeStyle = `rgba(100, 120, 150, ${cardT * 0.6})`;
+                    ctx.strokeStyle = `rgba(80, 100, 140, ${t * 0.5})`;
                     ctx.lineWidth = 1;
                     ctx.stroke();
                 }
 
                 ctx.restore();
             }
-        }
-
-        if (smoothMouseRef.current.x > 0 && smoothMouseRef.current.y > 0) {
-            const gradient = ctx.createRadialGradient(
-                smoothMouseRef.current.x, smoothMouseRef.current.y, 0,
-                smoothMouseRef.current.x, smoothMouseRef.current.y, LENS_RADIUS * 0.5
-            );
-            gradient.addColorStop(0, 'rgba(100, 130, 180, 0.04)');
-            gradient.addColorStop(0.5, 'rgba(80, 110, 160, 0.02)');
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(smoothMouseRef.current.x, smoothMouseRef.current.y, LENS_RADIUS * 0.5, 0, Math.PI * 2);
-            ctx.fill();
         }
 
         animationRef.current = requestAnimationFrame(render);
@@ -312,13 +263,15 @@ export default function SpiralRenderer() {
         initCards();
         render();
 
-        window.addEventListener('resize', () => {
+        const onResize = () => {
             handleResize();
             initCards();
-        });
+        };
+
+        window.addEventListener('resize', onResize);
 
         return () => {
-            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('resize', onResize);
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
