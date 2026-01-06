@@ -7,18 +7,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 interface Card {
     x: number;
     y: number;
-    hue: number;
     anime?: AnimeMedia;
     loadedImage?: HTMLImageElement;
+    brightness: number;
+    twinkleSpeed: number;
+    starSize: number;
 }
 
-const DOT_SIZE = 9;
-const POSTER_WIDTH = 120;
-const POSTER_HEIGHT = 180;
-const CARD_GAP = 4;
-
-const LENS_RADIUS = 180;
-const LENS_POWER = 1;
+const POSTER_WIDTH = 85;
+const POSTER_HEIGHT = 120;
+const LENS_RADIUS = 280;
 
 const imageCache = new Map<string, HTMLImageElement>();
 
@@ -39,65 +37,66 @@ function loadImageOnDemand(url: string): Promise<HTMLImageElement | null> {
     });
 }
 
-function generateGridCards(
+function generateUniformStars(
     animeList: AnimeMedia[],
-    containerWidth: number,
-    containerHeight: number
+    width: number,
+    height: number
 ): Card[] {
     const cards: Card[] = [];
-    const cellWidth = POSTER_WIDTH + CARD_GAP;
-    const cellHeight = POSTER_HEIGHT + CARD_GAP;
+    const count = Math.max(animeList.length, 300);
 
-    const count = animeList.length || 500;
-    const cols = Math.ceil(Math.sqrt(count * (containerWidth / containerHeight)));
+    const cols = Math.ceil(Math.sqrt(count * (width / height)));
     const rows = Math.ceil(count / cols);
 
-    const gridWidth = cols * cellWidth;
-    const gridHeight = rows * cellHeight;
-    const offsetX = (containerWidth - gridWidth) / 2;
-    const offsetY = (containerHeight - gridHeight) / 2;
+    const cellWidth = width / cols;
+    const cellHeight = height / rows;
 
     for (let i = 0; i < count; i++) {
         const col = i % cols;
         const row = Math.floor(i / cols);
 
-        const x = offsetX + col * cellWidth + cellWidth / 2;
-        const y = offsetY + row * cellHeight + cellHeight / 2;
+        const baseX = col * cellWidth + cellWidth / 2;
+        const baseY = row * cellHeight + cellHeight / 2;
+
+        const jitterX = (Math.random() - 0.5) * cellWidth * 0.7;
+        const jitterY = (Math.random() - 0.5) * cellHeight * 0.7;
+
+        const x = baseX + jitterX;
+        const y = baseY + jitterY;
 
         const animeIndex = i % Math.max(1, animeList.length);
         const anime = animeList[animeIndex];
-        const hue = (i * 137.5) % 360;
 
-        cards.push({ x, y, hue, anime });
+        cards.push({
+            x,
+            y,
+            anime,
+            brightness: 0.4 + Math.random() * 0.6,
+            twinkleSpeed: 0.8 + Math.random() * 2,
+            starSize: 1 + Math.random() * 1.5,
+        });
     }
 
     return cards;
 }
 
-function getLensEffect(
+function getBloomEffect(
     cardX: number,
     cardY: number,
     mouseX: number,
     mouseY: number
-): { t: number; offsetX: number; offsetY: number } {
+): { t: number; angle: number; distance: number } {
     const dx = cardX - mouseX;
     const dy = cardY - mouseY;
     const distance = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx);
 
     if (distance > LENS_RADIUS) {
-        return { t: 0, offsetX: 0, offsetY: 0 };
+        return { t: 0, angle, distance };
     }
 
-    const t = 1 - distance / LENS_RADIUS;
-
-    const eased = 1 - Math.pow(1 - t, 3);
-
-    const pushStrength = eased * 20;
-    const angle = Math.atan2(dy, dx);
-    const offsetX = Math.cos(angle) * pushStrength;
-    const offsetY = Math.sin(angle) * pushStrength;
-
-    return { t: eased, offsetX, offsetY };
+    const t = 1 - Math.pow(distance / LENS_RADIUS, 1.2);
+    return { t: Math.max(0, t), angle, distance };
 }
 
 export default function SpiralRenderer() {
@@ -105,11 +104,10 @@ export default function SpiralRenderer() {
     const cardsRef = useRef<Card[]>([]);
     const animationRef = useRef<number>(0);
     const mouseRef = useRef({ x: -1000, y: -1000 });
+    const smoothMouseRef = useRef({ x: -1000, y: -1000 });
     const loadingRef = useRef<Set<string>>(new Set());
-
-    const panRef = useRef({ x: 0, y: 0 });
-    const isDraggingRef = useRef(false);
-    const lastMouseRef = useRef({ x: 0, y: 0 });
+    const timeRef = useRef(0);
+    const dimensionsRef = useRef({ width: 0, height: 0 });
 
     const { animeList, isLoading, fetchTrending } = useAnimeStore();
     const [, forceUpdate] = useState(0);
@@ -121,12 +119,10 @@ export default function SpiralRenderer() {
     }, [animeList.length, fetchTrending]);
 
     const initCards = useCallback(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        const { width, height } = dimensionsRef.current;
+        if (width === 0 || height === 0) return;
 
-        const virtualWidth = 2500;
-        const virtualHeight = 2500;
-        cardsRef.current = generateGridCards(animeList, virtualWidth, virtualHeight);
+        cardsRef.current = generateUniformStars(animeList, width, height);
 
         cardsRef.current = cardsRef.current.map((card) => {
             const url = card.anime?.coverImage?.extraLarge || card.anime?.coverImage?.large;
@@ -135,11 +131,6 @@ export default function SpiralRenderer() {
             }
             return card;
         });
-
-        panRef.current = {
-            x: (canvas.width / window.devicePixelRatio - virtualWidth) / 2,
-            y: (canvas.height / window.devicePixelRatio - virtualHeight) / 2,
-        };
     }, [animeList]);
 
     const render = useCallback(() => {
@@ -153,90 +144,135 @@ export default function SpiralRenderer() {
         const width = canvas.width / dpr;
         const height = canvas.height / dpr;
 
-        ctx.fillStyle = '#030305';
+        timeRef.current = performance.now() / 1000;
+
+        smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * 0.12;
+        smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * 0.12;
+
+        ctx.fillStyle = '#0a0a0c';
         ctx.fillRect(0, 0, width, height);
 
-        const mouseX = mouseRef.current.x - panRef.current.x;
-        const mouseY = mouseRef.current.y - panRef.current.y;
+        const mouseX = smoothMouseRef.current.x;
+        const mouseY = smoothMouseRef.current.y;
 
-        const cardsWithLens = cardsRef.current.map((card, index) => {
-            const lens = getLensEffect(card.x, card.y, mouseX, mouseY);
-            return { card, lens, index };
-        }).sort((a, b) => a.lens.t - b.lens.t);
+        const cardsWithEffect = cardsRef.current.map((card, index) => {
+            const effect = getBloomEffect(card.x, card.y, mouseX, mouseY);
+            return { card, effect, index };
+        });
 
-        for (const { card, lens, index } of cardsWithLens) {
-            const drawX = card.x + panRef.current.x + lens.offsetX;
-            const drawY = card.y + panRef.current.y + lens.offsetY;
+        cardsWithEffect.sort((a, b) => {
+            if (a.effect.t === 0 && b.effect.t === 0) return 0;
+            if (a.effect.t === 0) return -1;
+            if (b.effect.t === 0) return 1;
+            return a.effect.distance - b.effect.distance;
+        });
 
-            const margin = POSTER_WIDTH + LENS_RADIUS;
-            if (drawX < -margin || drawX > width + margin ||
-                drawY < -margin || drawY > height + margin) {
-                continue;
+        for (const { card, effect, index } of cardsWithEffect) {
+            const { t, angle, distance } = effect;
+
+            let drawX = card.x;
+            let drawY = card.y;
+
+            if (t > 0.1) {
+                const pushAmount = t * 60;
+                drawX = card.x + Math.cos(angle) * pushAmount;
+                drawY = card.y + Math.sin(angle) * pushAmount;
             }
 
-            const w = DOT_SIZE + (POSTER_WIDTH - DOT_SIZE) * lens.t;
-            const h = DOT_SIZE + (POSTER_HEIGHT - DOT_SIZE) * lens.t;
+            if (t < 0.15) {
+                const twinkle = 0.5 + 0.5 * Math.sin(
+                    timeRef.current * card.twinkleSpeed + card.x * 0.02
+                );
+                const brightness = card.brightness * (0.6 + 0.4 * twinkle);
+                const starRadius = card.starSize * (1 + t * 3);
 
-            const showImage = lens.t > 0.3 && card.loadedImage;
+                const glowRadius = starRadius * 3;
+                const glow = ctx.createRadialGradient(
+                    drawX, drawY, 0,
+                    drawX, drawY, glowRadius
+                );
+                glow.addColorStop(0, `rgba(255, 255, 255, ${brightness})`);
+                glow.addColorStop(0.4, `rgba(200, 220, 255, ${brightness * 0.3})`);
+                glow.addColorStop(1, 'rgba(150, 180, 220, 0)');
 
-            if (lens.t > 0.2 && card.anime && !card.loadedImage) {
-                const url = card.anime.coverImage?.extraLarge || card.anime.coverImage?.large;
-                if (url && !loadingRef.current.has(url)) {
-                    loadingRef.current.add(url);
-                    loadImageOnDemand(url).then((img) => {
-                        if (img) {
-                            cardsRef.current[index] = { ...cardsRef.current[index], loadedImage: img };
-                            forceUpdate(n => n + 1);
-                        }
-                    });
-                }
-            }
-
-            if (showImage && card.loadedImage) {
-                const radius = Math.max(2, 6 * lens.t);
-                ctx.save();
+                ctx.fillStyle = glow;
                 ctx.beginPath();
-                ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
-                ctx.clip();
-                ctx.drawImage(card.loadedImage, drawX - w / 2, drawY - h / 2, w, h);
-                ctx.restore();
+                ctx.arc(drawX, drawY, glowRadius, 0, Math.PI * 2);
+                ctx.fill();
 
-                if (lens.t > 0.5) {
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${lens.t * 0.3})`;
-                    ctx.lineWidth = 1 + lens.t;
+                ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, starRadius * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                const cardT = (t - 0.15) / 0.85;
+                const sizeFactor = Math.pow(cardT, 0.6);
+
+                const centerBonus = 1 + (1 - distance / LENS_RADIUS) * 0.5;
+                const w = (8 + (POSTER_WIDTH - 8) * sizeFactor) * centerBonus;
+                const h = (8 + (POSTER_HEIGHT - 8) * sizeFactor) * centerBonus;
+
+                if (cardT > 0.1 && card.anime && !card.loadedImage) {
+                    const url = card.anime.coverImage?.extraLarge || card.anime.coverImage?.large;
+                    if (url && !loadingRef.current.has(url)) {
+                        loadingRef.current.add(url);
+                        loadImageOnDemand(url).then((img) => {
+                            if (img) {
+                                cardsRef.current[index] = { ...cardsRef.current[index], loadedImage: img };
+                                forceUpdate(n => n + 1);
+                            }
+                        });
+                    }
+                }
+
+                const showImage = cardT > 0.2 && card.loadedImage;
+                const radius = Math.max(3, 10 * cardT);
+                const rotation = (1 - cardT) * (angle + Math.PI / 2) * 0.3;
+
+                ctx.save();
+                ctx.translate(drawX, drawY);
+                ctx.rotate(rotation);
+
+                if (showImage && card.loadedImage) {
+                    ctx.globalAlpha = Math.min(1, cardT * 1.8);
                     ctx.beginPath();
-                    ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
+                    ctx.roundRect(-w / 2, -h / 2, w, h, radius);
+                    ctx.clip();
+                    ctx.drawImage(card.loadedImage, -w / 2, -h / 2, w, h);
+
+                    if (cardT > 0.5) {
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${cardT * 0.5})`;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                } else {
+                    const alpha = 0.4 + 0.5 * cardT;
+                    ctx.fillStyle = `rgba(40, 50, 70, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.roundRect(-w / 2, -h / 2, w, h, radius);
+                    ctx.fill();
+
+                    ctx.strokeStyle = `rgba(100, 120, 150, ${cardT * 0.6})`;
+                    ctx.lineWidth = 1;
                     ctx.stroke();
                 }
-            } else {
-                const alpha = 0.3 + 0.5 * lens.t;
-                const saturation = 50 + 30 * lens.t;
-                const lightness = 30 + 30 * lens.t;
 
-                ctx.fillStyle = `hsla(${card.hue}, ${saturation}%, ${lightness}%, ${alpha})`;
-
-                if (lens.t < 0.1) {
-                    ctx.beginPath();
-                    ctx.arc(drawX, drawY, w / 2, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    const radius = Math.max(2, w / 4);
-                    ctx.beginPath();
-                    ctx.roundRect(drawX - w / 2, drawY - h / 2, w, h, radius);
-                    ctx.fill();
-                }
+                ctx.restore();
             }
         }
 
-        if (mouseRef.current.x > 0 && mouseRef.current.y > 0) {
-            const glowGradient = ctx.createRadialGradient(
-                mouseRef.current.x, mouseRef.current.y, 0,
-                mouseRef.current.x, mouseRef.current.y, LENS_RADIUS * 0.8
+        if (smoothMouseRef.current.x > 0 && smoothMouseRef.current.y > 0) {
+            const gradient = ctx.createRadialGradient(
+                smoothMouseRef.current.x, smoothMouseRef.current.y, 0,
+                smoothMouseRef.current.x, smoothMouseRef.current.y, LENS_RADIUS * 0.5
             );
-            glowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.015)');
-            glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-            ctx.fillStyle = glowGradient;
-            ctx.fillRect(0, 0, width, height);
+            gradient.addColorStop(0, 'rgba(100, 130, 180, 0.04)');
+            gradient.addColorStop(0.5, 'rgba(80, 110, 160, 0.02)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(smoothMouseRef.current.x, smoothMouseRef.current.y, LENS_RADIUS * 0.5, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         animationRef.current = requestAnimationFrame(render);
@@ -252,6 +288,11 @@ export default function SpiralRenderer() {
         canvas.style.width = `${window.innerWidth}px`;
         canvas.style.height = `${window.innerHeight}px`;
 
+        dimensionsRef.current = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
+
         const ctx = canvas.getContext('2d');
         if (ctx) {
             ctx.scale(dpr, dpr);
@@ -260,28 +301,10 @@ export default function SpiralRenderer() {
 
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         mouseRef.current = { x: e.clientX, y: e.clientY };
-
-        if (isDraggingRef.current) {
-            const dx = e.clientX - lastMouseRef.current.x;
-            const dy = e.clientY - lastMouseRef.current.y;
-            panRef.current.x += dx;
-            panRef.current.y += dy;
-            lastMouseRef.current = { x: e.clientX, y: e.clientY };
-        }
-    }, []);
-
-    const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        isDraggingRef.current = true;
-        lastMouseRef.current = { x: e.clientX, y: e.clientY };
-    }, []);
-
-    const handleMouseUp = useCallback(() => {
-        isDraggingRef.current = false;
     }, []);
 
     const handleMouseLeave = useCallback(() => {
         mouseRef.current = { x: -1000, y: -1000 };
-        isDraggingRef.current = false;
     }, []);
 
     useEffect(() => {
@@ -289,7 +312,10 @@ export default function SpiralRenderer() {
         initCards();
         render();
 
-        window.addEventListener('resize', handleResize);
+        window.addEventListener('resize', () => {
+            handleResize();
+            initCards();
+        });
 
         return () => {
             window.removeEventListener('resize', handleResize);
@@ -307,10 +333,8 @@ export default function SpiralRenderer() {
         <>
             <canvas
                 ref={canvasRef}
-                className="fixed inset-0 cursor-grab active:cursor-grabbing"
+                className="fixed inset-0"
                 onMouseMove={handleMouseMove}
-                onMouseDown={handleMouseDown}
-                onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
             />
 
