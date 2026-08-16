@@ -556,17 +556,6 @@ export default function BlackHoleScene({ onEnter, isExpanding }: BlackHoleSceneP
         isDraggingRef.current = false;
     }, []);
 
-    const handleClick = useCallback(() => {
-        if (!isDraggingRef.current && !isWarpingRef.current) {
-            isWarpingRef.current = true;
-            warpStartTimeRef.current = performance.now();
-            warpStartPitchRef.current = pitchRef.current;
-            warpStartYawRef.current = yawRef.current;
-            warpProgressRef.current = 0;
-            onEnterCalledRef.current = false;
-        }
-    }, []);
-
     useEffect(() => {
         init();
         animate();
@@ -593,7 +582,6 @@ export default function BlackHoleScene({ onEnter, isExpanding }: BlackHoleSceneP
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            onClick={handleClick}
         />
     );
 }
