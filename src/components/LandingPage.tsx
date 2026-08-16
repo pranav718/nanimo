@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import BookInspect3D from './bookstore/BookInspect3D';
 import BookstoreHUD from './bookstore/BookstoreHUD';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
@@ -19,6 +20,7 @@ export default function LandingPage() {
         <main className="relative w-screen h-screen overflow-hidden bg-[#0a0808]">
             <BookstoreScene />
             <BookstoreHUD />
+            <BookInspect3D />
         </main>
     );
 }
