@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookstoreHUD from './bookstore/BookstoreHUD';
 
@@ -21,6 +22,7 @@ export default function LandingPage() {
             <BookstoreScene />
             <BookstoreHUD />
             <BookInspect3D />
+            <AnimeScreeningModal />
         </main>
     );
 }
