@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import { CharacterController } from './CharacterController';
+import { DynamicBooksManager } from './DynamicBooksManager';
 import { createMangaFloorLayout } from './MangaFloorLayout';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import TouchJoystick from './TouchJoystick';
@@ -15,8 +16,10 @@ export default function BookstoreScene() {
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
     const cameraControllerRef = useRef<ThirdPersonCamera | null>(null);
     const characterRef = useRef<CharacterController | null>(null);
+    const booksManagerRef = useRef<DynamicBooksManager | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number>(performance.now());
+    const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
     const {
         loadBookstoreData,
@@ -79,6 +82,10 @@ export default function BookstoreScene() {
         const mangaLayout = createMangaFloorLayout();
         scene.add(mangaLayout.group);
 
+        const booksManager = new DynamicBooksManager();
+        scene.add(booksManager.group);
+        booksManagerRef.current = booksManager;
+
         const spawnPos = new THREE.Vector3(0, 0, 16);
         const character = new CharacterController(
             spawnPos,
@@ -89,6 +96,38 @@ export default function BookstoreScene() {
         character.setOnInteract(handleInteract);
         scene.add(character.avatar.group);
         characterRef.current = character;
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        const onPointerDown = (e: MouseEvent) => {
+            pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+        };
+
+        const onPointerUp = (e: MouseEvent) => {
+            const dx = Math.abs(e.clientX - pointerDownPosRef.current.x);
+            const dy = Math.abs(e.clientY - pointerDownPosRef.current.y);
+            if (dx > 6 || dy > 6) return;
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, cameraController.camera);
+            if (booksManagerRef.current) {
+                const bookMeshes = booksManagerRef.current.getInteractiveMeshes();
+                const intersects = raycaster.intersectObjects(bookMeshes, false);
+                if (intersects.length > 0) {
+                    const hitObj = intersects[0].object;
+                    if (hitObj.userData?.media) {
+                        setInspectedMedia(hitObj.userData.media);
+                    }
+                }
+            }
+        };
+
+        const domEl = renderer.domElement;
+        domEl.addEventListener('mousedown', onPointerDown);
+        domEl.addEventListener('mouseup', onPointerUp);
 
         const handleResize = () => {
             if (!renderer || !cameraController) return;
@@ -118,6 +157,8 @@ export default function BookstoreScene() {
         animate();
 
         return () => {
+            domEl.removeEventListener('mousedown', onPointerDown);
+            domEl.removeEventListener('mouseup', onPointerUp);
             window.removeEventListener('resize', handleResize);
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
@@ -127,7 +168,13 @@ export default function BookstoreScene() {
                 renderer.dispose();
             }
         };
-    }, [handleInteract]);
+    }, [handleInteract, setInspectedMedia]);
+
+    useEffect(() => {
+        if (!booksManagerRef.current) return;
+        const layout = createMangaFloorLayout();
+        booksManagerRef.current.populateBooks(layout.genreSlots, mangaGenres);
+    }, [mangaGenres]);
 
     const handleJoystickMove = useCallback((x: number, y: number) => {
         characterRef.current?.setJoystickInput(x, y);
