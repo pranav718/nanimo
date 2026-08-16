@@ -3,9 +3,11 @@
 import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import { CharacterController } from './CharacterController';
 import { DynamicBooksManager } from './DynamicBooksManager';
+import { createElevator, ElevatorResult } from './ElevatorTransit';
 import { createMangaFloorLayout } from './MangaFloorLayout';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import TouchJoystick from './TouchJoystick';
@@ -17,6 +19,9 @@ export default function BookstoreScene() {
     const cameraControllerRef = useRef<ThirdPersonCamera | null>(null);
     const characterRef = useRef<CharacterController | null>(null);
     const booksManagerRef = useRef<DynamicBooksManager | null>(null);
+    const mangaLayoutRef = useRef<THREE.Group | null>(null);
+    const animeLayoutRef = useRef<AnimeFloorLayoutResult | null>(null);
+    const elevatorRef = useRef<ElevatorResult | null>(null);
     const animationFrameRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number>(performance.now());
     const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -26,6 +31,10 @@ export default function BookstoreScene() {
         proximityTarget,
         setInspectedMedia,
         mangaGenres,
+        animeGenres,
+        trendingAnime,
+        currentFloor,
+        setCurrentFloor,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -34,12 +43,23 @@ export default function BookstoreScene() {
         if (!target) return;
 
         if (target.type === 'shelf' && target.genre) {
-            const mediaList = store.mangaGenres[target.genre];
-            if (mediaList && mediaList.length > 0) {
-                setInspectedMedia(mediaList[0]);
+            if (store.currentFloor === 1) {
+                const mediaList = store.mangaGenres[target.genre];
+                if (mediaList && mediaList.length > 0) {
+                    setInspectedMedia(mediaList[0]);
+                }
+            } else {
+                const mediaList = store.animeGenres[target.genre];
+                if (mediaList && mediaList.length > 0) {
+                    setInspectedMedia(mediaList[0]);
+                }
             }
         } else if (target.type === 'elevator') {
-            store.setCurrentFloor(store.currentFloor === 1 ? 2 : 1);
+            const nextFloor = store.currentFloor === 1 ? 2 : 1;
+            store.setCurrentFloor(nextFloor);
+            if (characterRef.current) {
+                characterRef.current.teleport(new THREE.Vector3(0, 0, 14));
+            }
         }
     }, [setInspectedMedia]);
 
@@ -64,7 +84,7 @@ export default function BookstoreScene() {
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.1;
+        renderer.toneMappingExposure = 1.15;
         containerRef.current.appendChild(renderer.domElement);
         rendererRef.current = renderer;
 
@@ -79,18 +99,30 @@ export default function BookstoreScene() {
         const env = createBookstoreEnvironment();
         scene.add(env.group);
 
+        const elevator = createElevator(currentFloor);
+        elevator.group.position.set(0, 0, -18);
+        scene.add(elevator.group);
+        elevatorRef.current = elevator;
+
         const mangaLayout = createMangaFloorLayout();
+        mangaLayoutRef.current = mangaLayout.group;
         scene.add(mangaLayout.group);
+
+        const animeLayout = createAnimeFloorLayout();
+        animeLayoutRef.current = animeLayout;
+        animeLayout.group.visible = false;
+        scene.add(animeLayout.group);
 
         const booksManager = new DynamicBooksManager();
         scene.add(booksManager.group);
         booksManagerRef.current = booksManager;
 
-        const spawnPos = new THREE.Vector3(0, 0, 16);
+        const allObstacles = [elevator.obstacle, ...mangaLayout.obstacles];
+        const spawnPos = new THREE.Vector3(0, 0, 14);
         const character = new CharacterController(
             spawnPos,
             env.bounds,
-            mangaLayout.obstacles,
+            allObstacles,
             mangaLayout.aislePositions
         );
         character.setOnInteract(handleInteract);
@@ -113,13 +145,26 @@ export default function BookstoreScene() {
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, cameraController.camera);
-            if (booksManagerRef.current) {
+
+            const floor = useBookstoreStore.getState().currentFloor;
+
+            if (floor === 1 && booksManagerRef.current) {
                 const bookMeshes = booksManagerRef.current.getInteractiveMeshes();
                 const intersects = raycaster.intersectObjects(bookMeshes, false);
                 if (intersects.length > 0) {
                     const hitObj = intersects[0].object;
                     if (hitObj.userData?.media) {
                         setInspectedMedia(hitObj.userData.media);
+                    }
+                }
+            } else if (floor === 2 && animeLayoutRef.current) {
+                const intersects = raycaster.intersectObjects(animeLayoutRef.current.group.children, true);
+                if (intersects.length > 0) {
+                    for (const hit of intersects) {
+                        if (hit.object.userData?.media) {
+                            setInspectedMedia(hit.object.userData.media);
+                            break;
+                        }
                     }
                 }
             }
@@ -168,13 +213,43 @@ export default function BookstoreScene() {
                 renderer.dispose();
             }
         };
-    }, [handleInteract, setInspectedMedia]);
+    }, [handleInteract, setInspectedMedia, currentFloor]);
 
     useEffect(() => {
         if (!booksManagerRef.current) return;
         const layout = createMangaFloorLayout();
         booksManagerRef.current.populateBooks(layout.genreSlots, mangaGenres);
     }, [mangaGenres]);
+
+    useEffect(() => {
+        if (!animeLayoutRef.current) return;
+        animeLayoutRef.current.updateAnimePosters(animeGenres, trendingAnime);
+    }, [animeGenres, trendingAnime]);
+
+    useEffect(() => {
+        if (!mangaLayoutRef.current || !animeLayoutRef.current || !characterRef.current || !booksManagerRef.current) return;
+
+        const isFloor1 = currentFloor === 1;
+        mangaLayoutRef.current.visible = isFloor1;
+        booksManagerRef.current.group.visible = isFloor1;
+        animeLayoutRef.current.group.visible = !isFloor1;
+
+        if (elevatorRef.current) {
+            elevatorRef.current.light.color.setHex(isFloor1 ? 0x7dd3fc : 0xf43f5e);
+        }
+
+        if (isFloor1) {
+            const mangaLayout = createMangaFloorLayout();
+            const obs = elevatorRef.current ? [elevatorRef.current.obstacle, ...mangaLayout.obstacles] : mangaLayout.obstacles;
+            characterRef.current.setObstacles(obs);
+            characterRef.current.setAisles(mangaLayout.aislePositions);
+        } else {
+            const animeLayout = animeLayoutRef.current;
+            const obs = elevatorRef.current ? [elevatorRef.current.obstacle, ...animeLayout.obstacles] : animeLayout.obstacles;
+            characterRef.current.setObstacles(obs);
+            characterRef.current.setAisles(animeLayout.aislePositions);
+        }
+    }, [currentFloor]);
 
     const handleJoystickMove = useCallback((x: number, y: number) => {
         characterRef.current?.setJoystickInput(x, y);
