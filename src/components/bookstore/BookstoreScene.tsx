@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
+import BookstoreMiniMap from './BookstoreMiniMap';
 import { CharacterController } from './CharacterController';
 import { DynamicBooksManager } from './DynamicBooksManager';
 import { createElevator, ElevatorResult } from './ElevatorTransit';
@@ -34,7 +35,6 @@ export default function BookstoreScene() {
         animeGenres,
         trendingAnime,
         currentFloor,
-        setCurrentFloor,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -62,6 +62,12 @@ export default function BookstoreScene() {
             }
         }
     }, [setInspectedMedia]);
+
+    const handleTeleport = useCallback((x: number, z: number) => {
+        if (characterRef.current) {
+            characterRef.current.teleport(new THREE.Vector3(x, 0, z));
+        }
+    }, []);
 
     useEffect(() => {
         loadBookstoreData();
@@ -265,6 +271,7 @@ export default function BookstoreScene() {
     return (
         <div className="relative w-full h-full">
             <div ref={containerRef} className="fixed inset-0 select-none cursor-grab active:cursor-grabbing" />
+            <BookstoreMiniMap onTeleport={handleTeleport} />
             <TouchJoystick
                 onMove={handleJoystickMove}
                 onJump={handleMobileJump}
