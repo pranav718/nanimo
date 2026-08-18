@@ -3,8 +3,10 @@
 import dynamic from 'next/dynamic';
 import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
+import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookstoreHUD from './bookstore/BookstoreHUD';
+import StoreSearchModal from './bookstore/StoreSearchModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
     ssr: false,
@@ -24,6 +26,8 @@ export default function LandingPage() {
             <BookstoreHUD />
             <BookInspect3D />
             <AnimeScreeningModal />
+            <AvatarCustomizerModal />
+            <StoreSearchModal />
             <AmbientAudioPlayer />
         </main>
     );
