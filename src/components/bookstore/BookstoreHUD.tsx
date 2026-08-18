@@ -14,12 +14,14 @@ export default function BookstoreHUD() {
         setFastTravelOpen,
         isHelpOpen,
         setHelpOpen,
+        setWardrobeOpen,
+        setSearchOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
         1: { en: 'Manga Sanctuary', jp: '漫画フロア' },
         2: { en: 'Anime Screening Lounge', jp: 'アニメシアター' },
-        3: { en: 'Rooftop Showcase', jp: '屋上テラス' },
+        3: { en: 'Starlit Rooftop Observatory', jp: '屋上展望台' },
     };
 
     const current = floorNames[currentFloor] || floorNames[1];
@@ -28,10 +30,12 @@ export default function BookstoreHUD() {
         if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
         if (e.key === 'm' || e.key === 'M') {
             setFastTravelOpen(true);
+        } else if (e.key === 'c' || e.key === 'C') {
+            setWardrobeOpen(true);
         } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
             setHelpOpen(!isHelpOpen);
         }
-    }, [setFastTravelOpen, setHelpOpen, isHelpOpen]);
+    }, [setFastTravelOpen, setWardrobeOpen, setHelpOpen, isHelpOpen]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -68,6 +72,16 @@ export default function BookstoreHUD() {
                                 >
                                     2F Anime
                                 </button>
+                                <button
+                                    onClick={() => setCurrentFloor(3)}
+                                    className={`rounded-full px-3 py-0.5 text-xs font-semibold tracking-wider transition-all ${
+                                        currentFloor === 3
+                                            ? 'bg-pink-400 text-black shadow-md'
+                                            : 'text-white/60 hover:text-white'
+                                    }`}
+                                >
+                                    3F Rooftop
+                                </button>
                             </div>
                         </div>
                         <p className="mt-1.5 text-xs tracking-widest text-white/50 uppercase">
@@ -75,10 +89,26 @@ export default function BookstoreHUD() {
                         </p>
                     </div>
 
-                    <div className="pointer-events-auto flex items-center gap-2.5 mr-40">
+                    <div className="pointer-events-auto flex items-center gap-2 mr-40">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Search</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setWardrobeOpen(true)}
+                            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Wardrobe</span>
+                            <kbd className="hidden sm:inline-block rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">C</kbd>
+                        </button>
+
                         <button
                             onClick={toggleAudio}
-                            className={`flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold tracking-wider transition-all backdrop-blur-md ${
+                            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wider transition-all backdrop-blur-md ${
                                 isAudioPlaying
                                     ? 'border-amber-400/60 bg-amber-400/20 text-amber-300 shadow-lg shadow-amber-400/10'
                                     : 'border-white/15 bg-black/50 text-white/60 hover:bg-white/10 hover:text-white'
@@ -90,9 +120,9 @@ export default function BookstoreHUD() {
 
                         <button
                             onClick={() => setFastTravelOpen(true)}
-                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3.5 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
                         >
-                            <span>Directory</span>
+                            <span>Map</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">M</kbd>
                         </button>
 
@@ -119,7 +149,7 @@ export default function BookstoreHUD() {
                             </span>
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
-                                    ? `Step into Glass Elevator to Floor ${currentFloor === 1 ? '2' : '1'}`
+                                    ? `Step into Glass Elevator (Currently ${currentFloor}F)`
                                     : `Inspect ${proximityTarget.name}`}
                             </span>
                         </div>
@@ -128,7 +158,7 @@ export default function BookstoreHUD() {
 
                 <div className="hidden md:flex items-center justify-between text-[11px] tracking-wider text-white/40">
                     <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-1.5 backdrop-blur-md">
-                        <span>WASD / Arrows to Move</span>
+                        <span>WASD to Move</span>
                         <span>•</span>
                         <span>Shift to Sprint</span>
                         <span>•</span>
@@ -137,6 +167,8 @@ export default function BookstoreHUD() {
                         <span>Drag to Look</span>
                         <span>•</span>
                         <span>Click Volume to Inspect</span>
+                        <span>•</span>
+                        <span>C for Wardrobe</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -181,6 +213,14 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Inspect Volume / Elevator</span>
                                 <span className="font-mono text-amber-300">E / Left Click</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Avatar Wardrobe</span>
+                                <span className="font-mono text-amber-300">C</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Instant Search</span>
+                                <span className="font-mono text-amber-300">⌘K / /</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Fast Travel Directory</span>

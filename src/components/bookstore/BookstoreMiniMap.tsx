@@ -39,6 +39,12 @@ export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
         { id: 'a-scifi', label: 'Sci-Fi Station', labelJp: 'SFアニメ', x: 13, z: -2, floor: 2, genre: 'Sci-Fi' },
         { id: 'a-slice', label: 'Chill Lounge', labelJp: '日常アニメ', x: 13, z: 16, floor: 2, genre: 'Slice of Life' },
         { id: 'a-elevator', label: 'Glass Elevator', labelJp: '昇降機', x: 0, z: -16, floor: 2 },
+
+        { id: 'r-anime-podium', label: 'Top Anime Showcase', labelJp: '最高傑作', x: 0, z: -10, floor: 3 },
+        { id: 'r-manga-podium', label: 'Top Manga Showcase', labelJp: '名作漫画', x: 0, z: 10, floor: 3 },
+        { id: 'r-garden', label: 'Sakura Garden Deck', labelJp: '桜庭園', x: -12, z: 0, floor: 3 },
+        { id: 'r-observatory', label: 'Starlit Skyline View', labelJp: '展望台', x: 12, z: 0, floor: 3 },
+        { id: 'r-elevator', label: 'Glass Elevator', labelJp: '昇降機', x: 0, z: -16, floor: 3 },
     ];
 
     const currentFloorLocations = locations.filter((loc) => loc.floor === currentFloor);
@@ -140,7 +146,7 @@ export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
                                         : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
                                 }`}
                             >
-                                1F • Manga Sanctuary
+                                1F • Manga
                             </button>
                             <button
                                 onClick={() => setCurrentFloor(2)}
@@ -150,7 +156,17 @@ export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
                                         : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
                                 }`}
                             >
-                                2F • Anime Screening Lounge
+                                2F • Anime Lounge
+                            </button>
+                            <button
+                                onClick={() => setCurrentFloor(3)}
+                                className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                                    currentFloor === 3
+                                        ? 'bg-pink-400 text-black shadow-lg shadow-pink-400/20'
+                                        : 'bg-white/5 border border-white/10 text-white/60 hover:bg-white/10'
+                                }`}
+                            >
+                                3F • Rooftop
                             </button>
                         </div>
 
