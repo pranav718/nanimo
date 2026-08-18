@@ -1,8 +1,15 @@
 import * as THREE from 'three';
 
+export interface AvatarCustomization {
+    hairColor: string;
+    hoodieColor: string;
+    pantsColor: string;
+}
+
 export interface AvatarController {
     group: THREE.Group;
     update: (speed: number, delta: number) => void;
+    setCustomization: (custom: AvatarCustomization) => void;
     leftArm: THREE.Group;
     rightArm: THREE.Group;
     leftLeg: THREE.Group;
@@ -10,8 +17,14 @@ export interface AvatarController {
     head: THREE.Group;
 }
 
-export function createCharacterAvatar(): AvatarController {
+export function createCharacterAvatar(initialCustom?: AvatarCustomization): AvatarController {
     const group = new THREE.Group();
+
+    const custom: AvatarCustomization = {
+        hairColor: initialCustom?.hairColor || '#1a1a24',
+        hoodieColor: initialCustom?.hoodieColor || '#2563eb',
+        pantsColor: initialCustom?.pantsColor || '#1e293b',
+    };
 
     const skinMat = new THREE.MeshStandardMaterial({
         color: 0xffd1b3,
@@ -19,17 +32,17 @@ export function createCharacterAvatar(): AvatarController {
     });
 
     const hairMat = new THREE.MeshStandardMaterial({
-        color: 0x1a1a24,
+        color: new THREE.Color(custom.hairColor),
         roughness: 0.4,
     });
 
     const hoodieMat = new THREE.MeshStandardMaterial({
-        color: 0x2563eb,
+        color: new THREE.Color(custom.hoodieColor),
         roughness: 0.7,
     });
 
     const pantsMat = new THREE.MeshStandardMaterial({
-        color: 0x1e293b,
+        color: new THREE.Color(custom.pantsColor),
         roughness: 0.8,
     });
 
@@ -134,6 +147,12 @@ export function createCharacterAvatar(): AvatarController {
 
     let walkCycle = 0;
 
+    const setCustomization = (newCustom: AvatarCustomization) => {
+        hairMat.color.set(newCustom.hairColor);
+        hoodieMat.color.set(newCustom.hoodieColor);
+        pantsMat.color.set(newCustom.pantsColor);
+    };
+
     const update = (speed: number, delta: number) => {
         if (speed > 0.1) {
             walkCycle += delta * speed * 12;
@@ -161,6 +180,7 @@ export function createCharacterAvatar(): AvatarController {
     return {
         group,
         update,
+        setCustomization,
         leftArm,
         rightArm,
         leftLeg,

@@ -2,6 +2,12 @@ import { fetchAllBookstoreGenres, fetchTrendingMedia } from '@/lib/anilist';
 import { AnimeMedia, BookstoreGenre, FloorLevel } from '@/types';
 import { create } from 'zustand';
 
+export interface AvatarCustomizationState {
+    hairColor: string;
+    hoodieColor: string;
+    pantsColor: string;
+}
+
 export interface ProximityTarget {
     type: 'shelf' | 'cinema' | 'elevator' | 'podium';
     id: string;
@@ -24,8 +30,11 @@ interface BookstoreStore {
     isAudioPlaying: boolean;
     isFastTravelOpen: boolean;
     isHelpOpen: boolean;
+    isWardrobeOpen: boolean;
+    isSearchOpen: boolean;
     playerPosition: [number, number, number];
     isElevatorMoving: boolean;
+    avatarCustomization: AvatarCustomizationState;
 
     setCurrentFloor: (floor: FloorLevel) => void;
     setActiveGenre: (genre: BookstoreGenre | null) => void;
@@ -34,8 +43,11 @@ interface BookstoreStore {
     toggleAudio: () => void;
     setFastTravelOpen: (open: boolean) => void;
     setHelpOpen: (open: boolean) => void;
+    setWardrobeOpen: (open: boolean) => void;
+    setSearchOpen: (open: boolean) => void;
     setPlayerPosition: (position: [number, number, number]) => void;
     setIsElevatorMoving: (moving: boolean) => void;
+    setAvatarCustomization: (custom: Partial<AvatarCustomizationState>) => void;
     loadBookstoreData: () => Promise<void>;
 }
 
@@ -62,8 +74,15 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isAudioPlaying: false,
     isFastTravelOpen: false,
     isHelpOpen: false,
+    isWardrobeOpen: false,
+    isSearchOpen: false,
     playerPosition: [0, 0, 0],
     isElevatorMoving: false,
+    avatarCustomization: {
+        hairColor: '#1a1a24',
+        hoodieColor: '#2563eb',
+        pantsColor: '#1e293b',
+    },
 
     setCurrentFloor: (floor: FloorLevel) => {
         set({ currentFloor: floor });
@@ -93,12 +112,26 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
         set({ isHelpOpen: open });
     },
 
+    setWardrobeOpen: (open: boolean) => {
+        set({ isWardrobeOpen: open });
+    },
+
+    setSearchOpen: (open: boolean) => {
+        set({ isSearchOpen: open });
+    },
+
     setPlayerPosition: (position: [number, number, number]) => {
         set({ playerPosition: position });
     },
 
     setIsElevatorMoving: (moving: boolean) => {
         set({ isElevatorMoving: moving });
+    },
+
+    setAvatarCustomization: (custom: Partial<AvatarCustomizationState>) => {
+        set((state) => ({
+            avatarCustomization: { ...state.avatarCustomization, ...custom },
+        }));
     },
 
     loadBookstoreData: async () => {
