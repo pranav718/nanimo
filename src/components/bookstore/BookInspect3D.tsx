@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 export default function BookInspect3D() {
-    const { inspectedMedia, setInspectedMedia } = useBookstoreStore();
+    const { inspectedMedia, setInspectedMedia, toggleSaveMedia, isMediaSaved } = useBookstoreStore();
     const containerRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -175,6 +175,7 @@ export default function BookInspect3D() {
     const title = inspectedMedia.title.english || inspectedMedia.title.romaji || 'Unknown Title';
     const score = inspectedMedia.averageScore ? `${inspectedMedia.averageScore}%` : 'N/A';
     const cleanDesc = inspectedMedia.description?.replace(/<[^>]*>?/gm, '') || 'No synopsis available.';
+    const isSaved = isMediaSaved(inspectedMedia.id);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 md:p-8 backdrop-blur-xl animate-in fade-in duration-300">
@@ -237,21 +238,34 @@ export default function BookInspect3D() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-6 pt-4 border-t border-white/10">
-                        <a
-                            href={`https://anilist.co/manga/${inspectedMedia.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg hover:from-blue-500 hover:to-indigo-500 transition-all"
-                        >
-                            View on AniList
-                        </a>
+                    <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-white/10">
                         <button
-                            onClick={handleClose}
-                            className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                            onClick={() => toggleSaveMedia(inspectedMedia)}
+                            className={`w-full py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
+                                isSaved
+                                    ? 'bg-amber-400/20 border-amber-400 text-amber-300 shadow-md shadow-amber-400/10'
+                                    : 'bg-white/10 border-white/20 text-white hover:bg-white/15'
+                            }`}
                         >
-                            Back to Store
+                            {isSaved ? 'Saved in My Shelf' : 'Save to My Shelf'}
                         </button>
+
+                        <div className="flex items-center gap-3">
+                            <a
+                                href={`https://anilist.co/manga/${inspectedMedia.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg hover:from-blue-500 hover:to-indigo-500 transition-all"
+                            >
+                                View on AniList
+                            </a>
+                            <button
+                                onClick={handleClose}
+                                className="rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

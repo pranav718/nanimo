@@ -4,7 +4,7 @@ import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect } from 'react';
 
 export default function AnimeScreeningModal() {
-    const { inspectedMedia, setInspectedMedia, currentFloor } = useBookstoreStore();
+    const { inspectedMedia, setInspectedMedia, currentFloor, toggleSaveMedia, isMediaSaved } = useBookstoreStore();
 
     const handleClose = useCallback(() => {
         setInspectedMedia(null);
@@ -26,6 +26,7 @@ export default function AnimeScreeningModal() {
     const score = inspectedMedia.averageScore ? `${inspectedMedia.averageScore}%` : 'N/A';
     const cleanDesc = inspectedMedia.description?.replace(/<[^>]*>?/gm, '') || 'No synopsis available.';
     const trailerId = inspectedMedia.trailer?.site === 'youtube' ? inspectedMedia.trailer.id : null;
+    const isSaved = isMediaSaved(inspectedMedia.id);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 md:p-8 backdrop-blur-2xl animate-in fade-in duration-300">
@@ -95,21 +96,34 @@ export default function AnimeScreeningModal() {
                         {cleanDesc}
                     </p>
 
-                    <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/10">
-                        <a
-                            href={`https://anilist.co/anime/${inspectedMedia.id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="flex-1 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-3 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg hover:from-sky-400 hover:to-blue-500 transition-all"
-                        >
-                            View on AniList
-                        </a>
+                    <div className="flex flex-col gap-2.5 mt-4 pt-4 border-t border-white/10">
                         <button
-                            onClick={handleClose}
-                            className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                            onClick={() => toggleSaveMedia(inspectedMedia)}
+                            className={`w-full py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
+                                isSaved
+                                    ? 'bg-amber-400/20 border-amber-400 text-amber-300 shadow-md shadow-amber-400/10'
+                                    : 'bg-white/10 border-white/20 text-white hover:bg-white/15'
+                            }`}
                         >
-                            Back to Lounge
+                            {isSaved ? 'Saved in My Shelf' : 'Save to My Shelf'}
                         </button>
+
+                        <div className="flex items-center gap-3">
+                            <a
+                                href={`https://anilist.co/anime/${inspectedMedia.id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex-1 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-white shadow-lg hover:from-sky-400 hover:to-blue-500 transition-all"
+                            >
+                                View on AniList
+                            </a>
+                            <button
+                                onClick={handleClose}
+                                className="rounded-xl border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all"
+                            >
+                                Back to Lounge
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
