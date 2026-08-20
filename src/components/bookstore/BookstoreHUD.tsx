@@ -16,6 +16,8 @@ export default function BookstoreHUD() {
         setHelpOpen,
         setWardrobeOpen,
         setSearchOpen,
+        setBookmarksOpen,
+        savedMedia,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -32,10 +34,12 @@ export default function BookstoreHUD() {
             setFastTravelOpen(true);
         } else if (e.key === 'c' || e.key === 'C') {
             setWardrobeOpen(true);
+        } else if (e.key === 'b' || e.key === 'B') {
+            setBookmarksOpen(true);
         } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
             setHelpOpen(!isHelpOpen);
         }
-    }, [setFastTravelOpen, setWardrobeOpen, setHelpOpen, isHelpOpen]);
+    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, setHelpOpen, isHelpOpen]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -99,6 +103,19 @@ export default function BookstoreHUD() {
                         </button>
 
                         <button
+                            onClick={() => setBookmarksOpen(true)}
+                            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>My Shelf</span>
+                            {savedMedia.length > 0 && (
+                                <span className="rounded-full bg-amber-400 px-1.5 py-0.2 text-[10px] font-bold text-black">
+                                    {savedMedia.length}
+                                </span>
+                            )}
+                            <kbd className="hidden sm:inline-block rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">B</kbd>
+                        </button>
+
+                        <button
                             onClick={() => setWardrobeOpen(true)}
                             className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
                         >
@@ -150,6 +167,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'gachapon'
+                                    ? 'Turn Gachapon Machine Crank'
+                                    : proximityTarget.type === 'jukebox'
+                                    ? 'Toggle Anime Lo-Fi Jukebox'
                                     : `Inspect ${proximityTarget.name}`}
                             </span>
                         </div>
@@ -167,6 +188,8 @@ export default function BookstoreHUD() {
                         <span>Drag to Look</span>
                         <span>•</span>
                         <span>Click Volume to Inspect</span>
+                        <span>•</span>
+                        <span>B for Saved Shelf</span>
                         <span>•</span>
                         <span>C for Wardrobe</span>
                     </div>
@@ -211,8 +234,12 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">Mouse Drag</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Inspect Volume / Elevator</span>
+                                <span className="text-white/80 font-medium">Inspect Volume / Gachapon</span>
                                 <span className="font-mono text-amber-300">E / Left Click</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">My Saved Shelf</span>
+                                <span className="font-mono text-amber-300">B</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Avatar Wardrobe</span>
