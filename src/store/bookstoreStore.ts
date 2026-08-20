@@ -9,7 +9,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -23,6 +23,7 @@ interface BookstoreStore {
     animeGenres: Record<BookstoreGenre, AnimeMedia[]>;
     trendingAnime: AnimeMedia[];
     trendingManga: AnimeMedia[];
+    savedMedia: AnimeMedia[];
     isLoading: boolean;
     error: string | null;
     inspectedMedia: AnimeMedia | null;
@@ -32,6 +33,10 @@ interface BookstoreStore {
     isHelpOpen: boolean;
     isWardrobeOpen: boolean;
     isSearchOpen: boolean;
+    isBookmarksOpen: boolean;
+    isGachaponOpen: boolean;
+    gachaponResult: AnimeMedia | null;
+    activeJukeboxStation: number;
     playerPosition: [number, number, number];
     isElevatorMoving: boolean;
     avatarCustomization: AvatarCustomizationState;
@@ -45,10 +50,17 @@ interface BookstoreStore {
     setHelpOpen: (open: boolean) => void;
     setWardrobeOpen: (open: boolean) => void;
     setSearchOpen: (open: boolean) => void;
+    setBookmarksOpen: (open: boolean) => void;
+    setGachaponOpen: (open: boolean) => void;
+    setGachaponResult: (media: AnimeMedia | null) => void;
+    setActiveJukeboxStation: (idx: number) => void;
+    toggleSaveMedia: (media: AnimeMedia) => void;
+    isMediaSaved: (id: number) => boolean;
     setPlayerPosition: (position: [number, number, number]) => void;
     setIsElevatorMoving: (moving: boolean) => void;
     setAvatarCustomization: (custom: Partial<AvatarCustomizationState>) => void;
     loadBookstoreData: () => Promise<void>;
+    rollGachapon: () => AnimeMedia | null;
 }
 
 const defaultGenreRecord: Record<BookstoreGenre, AnimeMedia[]> = {
@@ -60,6 +72,16 @@ const defaultGenreRecord: Record<BookstoreGenre, AnimeMedia[]> = {
     'Slice of Life': [],
 };
 
+const getInitialSavedMedia = (): AnimeMedia[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+        const item = localStorage.getItem('nanimo_saved_media');
+        return item ? JSON.parse(item) : [];
+    } catch {
+        return [];
+    }
+};
+
 export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     currentFloor: 1,
     activeGenre: null,
@@ -67,6 +89,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     animeGenres: defaultGenreRecord,
     trendingAnime: [],
     trendingManga: [],
+    savedMedia: getInitialSavedMedia(),
     isLoading: false,
     error: null,
     inspectedMedia: null,
@@ -76,6 +99,10 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isHelpOpen: false,
     isWardrobeOpen: false,
     isSearchOpen: false,
+    isBookmarksOpen: false,
+    isGachaponOpen: false,
+    gachaponResult: null,
+    activeJukeboxStation: 0,
     playerPosition: [0, 0, 0],
     isElevatorMoving: false,
     avatarCustomization: {
@@ -120,6 +147,41 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
         set({ isSearchOpen: open });
     },
 
+    setBookmarksOpen: (open: boolean) => {
+        set({ isBookmarksOpen: open });
+    },
+
+    setGachaponOpen: (open: boolean) => {
+        set({ isGachaponOpen: open });
+    },
+
+    setGachaponResult: (media: AnimeMedia | null) => {
+        set({ gachaponResult: media });
+    },
+
+    setActiveJukeboxStation: (idx: number) => {
+        set({ activeJukeboxStation: idx });
+    },
+
+    toggleSaveMedia: (media: AnimeMedia) => {
+        const { savedMedia } = get();
+        const exists = savedMedia.some((m) => m.id === media.id);
+        const updated = exists
+            ? savedMedia.filter((m) => m.id !== media.id)
+            : [media, ...savedMedia];
+        
+        set({ savedMedia: updated });
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('nanimo_saved_media', JSON.stringify(updated));
+            } catch {}
+        }
+    },
+
+    isMediaSaved: (id: number) => {
+        return get().savedMedia.some((m) => m.id === id);
+    },
+
     setPlayerPosition: (position: [number, number, number]) => {
         set({ playerPosition: position });
     },
@@ -132,6 +194,19 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
         set((state) => ({
             avatarCustomization: { ...state.avatarCustomization, ...custom },
         }));
+    },
+
+    rollGachapon: () => {
+        const { mangaGenres, animeGenres, trendingAnime, trendingManga } = get();
+        const all: AnimeMedia[] = [];
+        Object.values(mangaGenres).forEach((l) => all.push(...l));
+        Object.values(animeGenres).forEach((l) => all.push(...l));
+        all.push(...trendingAnime, ...trendingManga);
+
+        if (all.length === 0) return null;
+        const randomItem = all[Math.floor(Math.random() * all.length)];
+        set({ gachaponResult: randomItem, isGachaponOpen: true });
+        return randomItem;
     },
 
     loadBookstoreData: async () => {
