@@ -10,7 +10,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -40,6 +40,8 @@ interface BookstoreStore {
     isReaderOpen: boolean;
     isCafeOpen: boolean;
     isSittingCinema: boolean;
+    isPhotoMode: boolean;
+    isQuizOpen: boolean;
     readingMedia: AnimeMedia | null;
     isFirstPerson: boolean;
     atmospherePreset: AtmospherePreset;
@@ -63,6 +65,8 @@ interface BookstoreStore {
     setReaderOpen: (open: boolean) => void;
     setCafeOpen: (open: boolean) => void;
     setSittingCinema: (sitting: boolean) => void;
+    setPhotoMode: (open: boolean) => void;
+    setQuizOpen: (open: boolean) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
     toggleFirstPerson: () => void;
     setAtmospherePreset: (preset: AtmospherePreset) => void;
@@ -119,6 +123,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isReaderOpen: false,
     isCafeOpen: false,
     isSittingCinema: false,
+    isPhotoMode: false,
+    isQuizOpen: false,
     readingMedia: null,
     isFirstPerson: false,
     atmospherePreset: 'midnight',
@@ -186,6 +192,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setSittingCinema: (sitting: boolean) => {
         set({ isSittingCinema: sitting });
+    },
+
+    setPhotoMode: (open: boolean) => {
+        set({ isPhotoMode: open });
+    },
+
+    setQuizOpen: (open: boolean) => {
+        set({ isQuizOpen: open });
     },
 
     setReadingMedia: (media: AnimeMedia | null) => {
