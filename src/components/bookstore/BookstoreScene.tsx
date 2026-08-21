@@ -3,6 +3,7 @@
 import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { AmbientParticlesResult, createAmbientParticles } from './AmbientParticles3D';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
 import { createQuizKiosk, QuizKioskResult } from './AnimeQuizKiosk3D';
 import { applyAtmosphere } from './AtmospherePresets';
@@ -32,6 +33,7 @@ export default function BookstoreScene() {
     const animeLayoutRef = useRef<AnimeFloorLayoutResult | null>(null);
     const rooftopLayoutRef = useRef<RooftopLayoutResult | null>(null);
     const quizKioskRef = useRef<QuizKioskResult | null>(null);
+    const ambientParticlesRef = useRef<AmbientParticlesResult | null>(null);
     const elevatorRef = useRef<ElevatorResult | null>(null);
     const gachaponRef = useRef<GachaponMachineResult | null>(null);
     const personalShelfRef = useRef<PersonalShelfResult | null>(null);
@@ -53,6 +55,7 @@ export default function BookstoreScene() {
         savedMedia,
         currentFloor,
         avatarCustomization,
+        activeEmote,
         rollGachapon,
         toggleAudio,
         setBookmarksOpen,
@@ -150,6 +153,10 @@ export default function BookstoreScene() {
         const env = createBookstoreEnvironment();
         envLightsRef.current = env.lights;
         scene.add(env.group);
+
+        const particles = createAmbientParticles();
+        scene.add(particles.group);
+        ambientParticlesRef.current = particles;
 
         const elevator = createElevator(currentFloor);
         elevator.group.position.set(0, 0, -18);
@@ -336,11 +343,17 @@ export default function BookstoreScene() {
             const delta = Math.min((now - lastTimeRef.current) / 1000, 0.1);
             lastTimeRef.current = now;
 
+            const floor = useBookstoreStore.getState().currentFloor;
+
             if (character && cameraController) {
                 character.update(delta, cameraController.getYaw());
                 cameraController.update(character.position, delta);
 
                 const currentIsAudio = useBookstoreStore.getState().isAudioPlaying;
+
+                if (ambientParticlesRef.current) {
+                    ambientParticlesRef.current.update(delta, floor);
+                }
 
                 if (gachaponRef.current) {
                     gachaponRef.current.update(delta);
@@ -389,6 +402,12 @@ export default function BookstoreScene() {
         cameraControllerRef.current.isFirstPerson = isFirstPerson;
         characterRef.current.avatar.group.visible = !isFirstPerson;
     }, [isFirstPerson]);
+
+    useEffect(() => {
+        if (characterRef.current) {
+            characterRef.current.avatar.playEmote(activeEmote);
+        }
+    }, [activeEmote]);
 
     useEffect(() => {
         if (!sceneRef.current || envLightsRef.current.length === 0) return;

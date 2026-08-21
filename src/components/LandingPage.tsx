@@ -9,6 +9,7 @@ import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
 import BookstoreHUD from './bookstore/BookstoreHUD';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
+import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
@@ -40,6 +41,7 @@ export default function LandingPage() {
             <CafeSommelierModal />
             <AnimeQuizModal />
             <PhotoModeModal />
+            <EmoteRadialWheel />
             <AmbientAudioPlayer />
         </main>
     );
