@@ -25,6 +25,7 @@ export default function BookstoreHUD() {
         setAtmospherePreset,
         isPhotoMode,
         setPhotoMode,
+        setEmoteWheelOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -52,6 +53,8 @@ export default function BookstoreHUD() {
             setWardrobeOpen(true);
         } else if (e.key === 'b' || e.key === 'B') {
             setBookmarksOpen(true);
+        } else if (e.key === 'x' || e.key === 'X') {
+            setEmoteWheelOpen(true);
         } else if (e.key === 'v' || e.key === 'V') {
             toggleFirstPerson();
         } else if (e.key === 'p' || e.key === 'P') {
@@ -59,7 +62,7 @@ export default function BookstoreHUD() {
         } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
             setHelpOpen(!isHelpOpen);
         }
-    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, toggleFirstPerson, setPhotoMode, isPhotoMode, setHelpOpen, isHelpOpen]);
+    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, setEmoteWheelOpen, toggleFirstPerson, setPhotoMode, isPhotoMode, setHelpOpen, isHelpOpen]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -130,6 +133,14 @@ export default function BookstoreHUD() {
                         >
                             <span>Photo</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">P</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setEmoteWheelOpen(true)}
+                            className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Emotes</span>
+                            <kbd className="hidden sm:inline-block rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">X</kbd>
                         </button>
 
                         <button
@@ -238,6 +249,8 @@ export default function BookstoreHUD() {
                         <span>•</span>
                         <span>Space to Jump</span>
                         <span>•</span>
+                        <span>X for Emotes</span>
+                        <span>•</span>
                         <span>P for Photo Studio</span>
                         <span>•</span>
                         <span>V for 1st/3rd Person</span>
@@ -279,6 +292,10 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Jump</span>
                                 <span className="font-mono text-amber-300">Spacebar</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Avatar Emotes & Gestures</span>
+                                <span className="font-mono text-amber-300">X</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Photo Studio Mode</span>
