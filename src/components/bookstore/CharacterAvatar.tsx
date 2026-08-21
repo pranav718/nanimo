@@ -10,6 +10,7 @@ export interface AvatarController {
     group: THREE.Group;
     update: (speed: number, delta: number) => void;
     setCustomization: (custom: AvatarCustomization) => void;
+    setSitting: (sitting: boolean) => void;
     leftArm: THREE.Group;
     rightArm: THREE.Group;
     leftLeg: THREE.Group;
@@ -146,6 +147,7 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
     group.add(rightLeg);
 
     let walkCycle = 0;
+    let isSittingState = false;
 
     const setCustomization = (newCustom: AvatarCustomization) => {
         hairMat.color.set(newCustom.hairColor);
@@ -153,7 +155,21 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
         pantsMat.color.set(newCustom.pantsColor);
     };
 
+    const setSitting = (sitting: boolean) => {
+        isSittingState = sitting;
+    };
+
     const update = (speed: number, delta: number) => {
+        if (isSittingState) {
+            leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, -Math.PI / 2, 0.15);
+            rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, -Math.PI / 2, 0.15);
+            leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -Math.PI / 4, 0.15);
+            rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -Math.PI / 4, 0.15);
+            torsoGroup.position.y = THREE.MathUtils.lerp(torsoGroup.position.y, 0.6, 0.15);
+            headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, 0, 0.15);
+            return;
+        }
+
         if (speed > 0.1) {
             walkCycle += delta * speed * 12;
             const swing = Math.sin(walkCycle) * 0.65;
@@ -181,6 +197,7 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
         group,
         update,
         setCustomization,
+        setSitting,
         leftArm,
         rightArm,
         leftLeg,

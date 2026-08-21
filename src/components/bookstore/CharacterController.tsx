@@ -73,7 +73,7 @@ export class CharacterController {
 
     public setJoystickInput(x: number, y: number) {
         this.input.strafe = x;
-        this.input.forward = y;
+        this.input.forward = -y;
     }
 
     private bindKeys() {
@@ -82,32 +82,39 @@ export class CharacterController {
         window.addEventListener('keydown', (e) => {
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-            switch (e.code) {
-                case 'KeyW':
-                case 'ArrowUp':
+            const isSitting = useBookstoreStore.getState().isSittingCinema;
+            if (isSitting && ['w', 'a', 's', 'd', ' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key.toLowerCase())) {
+                useBookstoreStore.getState().setSittingCinema(false);
+                this.avatar.setSitting(false);
+            }
+
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                case 'arrowup':
                     this.input.forward = 1;
                     break;
-                case 'KeyS':
-                case 'ArrowDown':
+                case 's':
+                case 'arrowdown':
                     this.input.forward = -1;
                     break;
-                case 'KeyA':
-                case 'ArrowLeft':
+                case 'a':
+                case 'arrowleft':
                     this.input.strafe = -1;
                     break;
-                case 'KeyD':
-                case 'ArrowRight':
+                case 'd':
+                case 'arrowright':
                     this.input.strafe = 1;
                     break;
-                case 'ShiftLeft':
-                case 'ShiftRight':
+                case 'shift':
                     this.input.sprint = true;
                     break;
-                case 'Space':
-                    this.input.jump = true;
+                case ' ':
+                    if (this.isGrounded) {
+                        this.velocity.y = 7.2;
+                        this.isGrounded = false;
+                    }
                     break;
-                case 'KeyE':
-                    this.input.interact = true;
+                case 'e':
                     if (this.onInteractCallback) {
                         this.onInteractCallback();
                     }
@@ -116,86 +123,101 @@ export class CharacterController {
         });
 
         window.addEventListener('keyup', (e) => {
-            switch (e.code) {
-                case 'KeyW':
-                case 'ArrowUp':
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                case 'arrowup':
                     if (this.input.forward === 1) this.input.forward = 0;
                     break;
-                case 'KeyS':
-                case 'ArrowDown':
+                case 's':
+                case 'arrowdown':
                     if (this.input.forward === -1) this.input.forward = 0;
                     break;
-                case 'KeyA':
-                case 'ArrowLeft':
+                case 'a':
+                case 'arrowleft':
                     if (this.input.strafe === -1) this.input.strafe = 0;
                     break;
-                case 'KeyD':
-                case 'ArrowRight':
+                case 'd':
+                case 'arrowright':
                     if (this.input.strafe === 1) this.input.strafe = 0;
                     break;
-                case 'ShiftLeft':
-                case 'ShiftRight':
+                case 'shift':
                     this.input.sprint = false;
-                    break;
-                case 'Space':
-                    this.input.jump = false;
-                    break;
-                case 'KeyE':
-                    this.input.interact = false;
                     break;
             }
         });
     }
 
     public update(delta: number, cameraYaw: number) {
-        const moveSpeed = this.input.sprint ? 9.5 : 5.8;
-        const inputDir = new THREE.Vector2(this.input.strafe, this.input.forward);
-        
-        if (inputDir.lengthSq() > 1) {
-            inputDir.normalize();
+        const isSitting = useBookstoreStore.getState().isSittingCinema;
+        if (isSitting) {
+            this.avatar.setSitting(true);
+            this.speed = 0;
+            this.avatar.update(0, delta);
+            this.checkProximities();
+            return;
         }
 
-        const moveLength = inputDir.length();
+        this.avatar.setSitting(false);
 
-        if (moveLength > 0.05) {
-            const inputAngle = Math.atan2(inputDir.x, inputDir.y);
-            const moveAngle = cameraYaw + inputAngle;
+        const moveDir = new THREE.Vector3();
+        if (this.input.forward !== 0 || this.input.strafe !== 0) {
+            const camForward = new THREE.Vector3(Math.sin(cameraYaw), 0, Math.cos(cameraYaw));
+            const camRight = new THREE.Vector3(Math.cos(cameraYaw), 0, -Math.sin(cameraYaw));
 
-            const targetVx = Math.sin(moveAngle) * moveSpeed * moveLength;
-            const targetVz = Math.cos(moveAngle) * moveSpeed * moveLength;
+            moveDir.addScaledVector(camForward, -this.input.forward);
+            moveDir.addScaledVector(camRight, this.input.strafe);
 
-            this.velocity.x = THREE.MathUtils.lerp(this.velocity.x, targetVx, 12 * delta);
-            this.velocity.z = THREE.MathUtils.lerp(this.velocity.z, targetVz, 12 * delta);
+            if (moveDir.lengthSq() > 0) {
+                moveDir.normalize();
+                this.targetRotationY = Math.atan2(moveDir.x, moveDir.z);
+            }
+        }
 
-            this.targetRotationY = moveAngle;
+        const maxSpeed = this.input.sprint ? 9.5 : 5.8;
+        const acceleration = 36;
+        const friction = 22;
+
+        if (moveDir.lengthSq() > 0) {
+            const targetVelX = moveDir.x * maxSpeed;
+            const targetVelZ = moveDir.z * maxSpeed;
+            this.velocity.x = THREE.MathUtils.lerp(this.velocity.x, targetVelX, acceleration * delta);
+            this.velocity.z = THREE.MathUtils.lerp(this.velocity.z, targetVelZ, acceleration * delta);
         } else {
-            this.velocity.x = THREE.MathUtils.lerp(this.velocity.x, 0, 14 * delta);
-            this.velocity.z = THREE.MathUtils.lerp(this.velocity.z, 0, 14 * delta);
+            this.velocity.x = THREE.MathUtils.lerp(this.velocity.x, 0, friction * delta);
+            this.velocity.z = THREE.MathUtils.lerp(this.velocity.z, 0, friction * delta);
         }
 
-        if (this.input.jump && this.isGrounded) {
-            this.velocity.y = 7.2;
-            this.isGrounded = false;
+        if (!this.isGrounded) {
+            this.velocity.y -= 19.8 * delta;
         }
 
-        this.velocity.y -= 22 * delta;
+        const testX = this.position.x + this.velocity.x * delta;
+        const testZ = this.position.z + this.velocity.z * delta;
+        const testY = this.position.y + this.velocity.y * delta;
 
-        let newX = this.position.x + this.velocity.x * delta;
-        let newY = this.position.y + this.velocity.y * delta;
-        let newZ = this.position.z + this.velocity.z * delta;
+        this.position.x = this.resolveCollisions(testX, this.position.z, 'x');
+        this.position.z = this.resolveCollisions(this.position.x, testZ, 'z');
 
-        if (newY <= 0) {
-            newY = 0;
+        this.position.x = THREE.MathUtils.clamp(
+            this.position.x,
+            this.bounds.minX + this.radius,
+            this.bounds.maxX - this.radius
+        );
+        this.position.z = THREE.MathUtils.clamp(
+            this.position.z,
+            this.bounds.minZ + this.radius,
+            this.bounds.maxZ - this.radius
+        );
+
+        if (testY <= 0) {
+            this.position.y = 0;
             this.velocity.y = 0;
             this.isGrounded = true;
+        } else {
+            this.position.y = testY;
         }
-
-        const resolvedX = this.resolveCollisions(newX, this.position.z, 'x');
-        const resolvedZ = this.resolveCollisions(resolvedX, newZ, 'z');
-
-        this.position.x = THREE.MathUtils.clamp(resolvedX, this.bounds.minX, this.bounds.maxX);
-        this.position.y = newY;
-        this.position.z = THREE.MathUtils.clamp(resolvedZ, this.bounds.minZ, this.bounds.maxZ);
 
         let rotDiff = this.targetRotationY - this.currentRotationY;
         while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
@@ -243,6 +265,64 @@ export class CharacterController {
         const store = useBookstoreStore.getState();
         store.setPlayerPosition([this.position.x, this.position.y, this.position.z]);
 
+        const floor = store.currentFloor;
+
+        if (floor === 1) {
+            const cafePos = new THREE.Vector3(18, 0, 8);
+            if (this.position.distanceTo(cafePos) < 4.2) {
+                store.setProximityTarget({
+                    type: 'cafe',
+                    id: 'cafe-1',
+                    name: 'Cafe Nanimo Barista Aoi',
+                });
+                return;
+            }
+
+            const gachaponPos = new THREE.Vector3(-18, 0, 8);
+            if (this.position.distanceTo(gachaponPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'gachapon',
+                    id: 'gacha-1',
+                    name: 'Gachapon Capsule Machine',
+                });
+                return;
+            }
+
+            const shelfPos = new THREE.Vector3(-18, 0, -6);
+            if (this.position.distanceTo(shelfPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'personalshelf',
+                    id: 'personal-1',
+                    name: 'My Personal Collection Shelf',
+                });
+                return;
+            }
+        } else if (floor === 2) {
+            const jukeboxPos = new THREE.Vector3(-18, 0, -10);
+            if (this.position.distanceTo(jukeboxPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'jukebox',
+                    id: 'jukebox-1',
+                    name: 'Anime Lo-Fi Jukebox',
+                });
+                return;
+            }
+
+            const seats: [number, number, number][] = [[-5.5, 0, -7], [5.5, 0, -7], [0, 0, -3]];
+            for (const s of seats) {
+                const sVec = new THREE.Vector3(...s);
+                if (this.position.distanceTo(sVec) < 2.8) {
+                    store.setProximityTarget({
+                        type: 'seat',
+                        id: `seat-${s[0]}-${s[2]}`,
+                        name: 'Cinema VIP Couch (Press E to Sit)',
+                        seatPos: s,
+                    });
+                    return;
+                }
+            }
+        }
+
         let nearestAisle: { genre: BookstoreGenre; distance: number } | null = null;
         const interactRadius = 4.2;
 
@@ -260,7 +340,7 @@ export class CharacterController {
             store.setProximityTarget({
                 type: 'shelf',
                 id: `aisle-${nearestAisle.genre}`,
-                name: `${nearestAisle.genre} Manga Aisle`,
+                name: `${nearestAisle.genre} Section`,
                 genre: nearestAisle.genre,
             });
         } else {
@@ -269,7 +349,7 @@ export class CharacterController {
                 store.setProximityTarget({
                     type: 'elevator',
                     id: 'elevator-1',
-                    name: 'Glass Elevator to Floor 2',
+                    name: `Glass Elevator (Floor ${floor})`,
                 });
             } else {
                 store.setActiveGenre(null);

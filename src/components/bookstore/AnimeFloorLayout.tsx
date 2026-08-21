@@ -14,6 +14,7 @@ export interface AnimeFloorLayoutResult {
     group: THREE.Group;
     obstacles: BookshelfObstacle[];
     aislePositions: { genre: BookstoreGenre; position: THREE.Vector3 }[];
+    seatPositions: [number, number, number][];
     updateAnimePosters: (animeGenres: Record<BookstoreGenre, AnimeMedia[]>, trending: AnimeMedia[]) => void;
     screenMesh: THREE.Mesh;
 }
@@ -22,6 +23,11 @@ export function createAnimeFloorLayout(): AnimeFloorLayoutResult {
     const group = new THREE.Group();
     const obstacles: BookshelfObstacle[] = [];
     const aislePositions: { genre: BookstoreGenre; position: THREE.Vector3 }[] = [];
+    const seatPositions: [number, number, number][] = [
+        [-5.5, 0, -7],
+        [5.5, 0, -7],
+        [0, 0, -3],
+    ];
     const posterMeshes: { mesh: THREE.Mesh; genre: BookstoreGenre; index: number }[] = [];
 
     const screenWidth = 16;
@@ -139,40 +145,38 @@ export function createAnimeFloorLayout(): AnimeFloorLayoutResult {
         const posterCount = 4;
         for (let p = 0; p < posterCount; p++) {
             const angle = (p / posterCount) * Math.PI * 2;
-            const px = Math.sin(angle) * 1.35;
-            const pz = Math.cos(angle) * 1.35;
+            const radius = 1.4;
+            const px = Math.cos(angle) * radius;
+            const pz = Math.sin(angle) * radius;
 
-            const posterGeo = new THREE.PlaneGeometry(0.9, 1.35);
-            const posterMat = new THREE.MeshStandardMaterial({
-                color: 0x334155,
-                roughness: 0.3,
+            const standGeo = new THREE.BoxGeometry(0.85, 1.3, 0.08);
+            const standMat = new THREE.MeshStandardMaterial({
+                color: 0x222230,
+                roughness: 0.5,
             });
-            const posterMesh = new THREE.Mesh(posterGeo, posterMat);
-            posterMesh.position.set(px, 1.6, pz);
-            posterMesh.rotation.y = angle + Math.PI;
+            const posterMesh = new THREE.Mesh(standGeo, standMat);
+            posterMesh.position.set(px, 1.4, pz);
+            posterMesh.rotation.y = -angle + Math.PI / 2;
             posterMesh.castShadow = true;
-            boothGroup.add(posterMesh);
+            posterMesh.userData = { genre: g.genre, posterIndex: p };
 
-            posterMeshes.push({
-                mesh: posterMesh,
-                genre: g.genre,
-                index: p,
-            });
+            boothGroup.add(posterMesh);
+            posterMeshes.push({ mesh: posterMesh, genre: g.genre, index: p });
         }
 
         const sign = createAisleOverheadSign(g.titleEn, g.titleJp, g.genre);
-        sign.position.set(0, 3.8, 0);
+        sign.position.set(0, 3.4, 0);
         boothGroup.add(sign);
 
         group.add(boothGroup);
 
         obstacles.push({
             box: new THREE.Box3(
-                new THREE.Vector3(gx - 2.1, 0, gz - 2.1),
-                new THREE.Vector3(gx + 2.1, 3.2, gz + 2.1)
+                new THREE.Vector3(gx - 2.0, 0, gz - 2.0),
+                new THREE.Vector3(gx + 2.0, 3.2, gz + 2.0)
             ),
             center: new THREE.Vector3(gx, 1.6, gz),
-            size: new THREE.Vector3(4.2, 3.2, 4.2),
+            size: new THREE.Vector3(4.0, 3.2, 4.0),
         });
     });
 
@@ -182,35 +186,32 @@ export function createAnimeFloorLayout(): AnimeFloorLayoutResult {
     ) => {
         posterMeshes.forEach(({ mesh, genre, index }) => {
             const list = animeGenres[genre] || [];
-            const media = list[index % list.length];
+            const media = list[index] || trending[index];
             if (!media) return;
 
-            const tex = getCoverTexture(media.coverImage.large || media.coverImage.medium);
-            if (tex) {
-                mesh.material = new THREE.MeshStandardMaterial({
-                    map: tex,
-                    roughness: 0.3,
-                });
-            }
-            mesh.userData = { media, genre, isAnimePoster: true };
-        });
+            const coverUrl = media.coverImage.extraLarge || media.coverImage.large;
+            const tex = getCoverTexture(coverUrl);
 
-        if (trending && trending.length > 0) {
-            const topAnime = trending[0];
-            const bannerUrl = topAnime.bannerImage || topAnime.coverImage.extraLarge;
-            const bannerTex = getCoverTexture(bannerUrl);
-            if (bannerTex) {
-                screenMat.map = bannerTex;
-                screenMat.needsUpdate = true;
-                screenMesh.userData = { media: topAnime, isCinemaScreen: true };
-            }
-        }
+            const mat = tex
+                ? new THREE.MeshStandardMaterial({
+                      map: tex,
+                      roughness: 0.3,
+                      emissive: new THREE.Color(0xffffff),
+                      emissiveMap: tex,
+                      emissiveIntensity: 0.25,
+                  })
+                : new THREE.MeshStandardMaterial({ color: 0x334155 });
+
+            mesh.material = mat;
+            mesh.userData = { media, isAnimePoster: true };
+        });
     };
 
     return {
         group,
         obstacles,
         aislePositions,
+        seatPositions,
         updateAnimePosters,
         screenMesh,
     };
