@@ -4,6 +4,7 @@ import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
+import { createQuizKiosk, QuizKioskResult } from './AnimeQuizKiosk3D';
 import { applyAtmosphere } from './AtmospherePresets';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import BookstoreMiniMap from './BookstoreMiniMap';
@@ -30,6 +31,7 @@ export default function BookstoreScene() {
     const mangaLayoutRef = useRef<THREE.Group | null>(null);
     const animeLayoutRef = useRef<AnimeFloorLayoutResult | null>(null);
     const rooftopLayoutRef = useRef<RooftopLayoutResult | null>(null);
+    const quizKioskRef = useRef<QuizKioskResult | null>(null);
     const elevatorRef = useRef<ElevatorResult | null>(null);
     const gachaponRef = useRef<GachaponMachineResult | null>(null);
     const personalShelfRef = useRef<PersonalShelfResult | null>(null);
@@ -59,6 +61,7 @@ export default function BookstoreScene() {
         atmospherePreset,
         setCafeOpen,
         setSittingCinema,
+        setQuizOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -93,13 +96,15 @@ export default function BookstoreScene() {
             setBookmarksOpen(true);
         } else if (target.type === 'cafe') {
             setCafeOpen(true);
+        } else if (target.type === 'quiz') {
+            setQuizOpen(true);
         } else if (target.type === 'seat' && target.seatPos) {
             setSittingCinema(true);
             if (characterRef.current) {
                 characterRef.current.teleport(new THREE.Vector3(target.seatPos[0], 0, target.seatPos[2]));
             }
         }
-    }, [setInspectedMedia, rollGachapon, toggleAudio, setBookmarksOpen, setCafeOpen, setSittingCinema]);
+    }, [setInspectedMedia, rollGachapon, toggleAudio, setBookmarksOpen, setCafeOpen, setSittingCinema, setQuizOpen]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
         if (characterRef.current) {
@@ -122,6 +127,7 @@ export default function BookstoreScene() {
         const renderer = new THREE.WebGLRenderer({
             antialias: true,
             powerPreference: 'high-performance',
+            preserveDrawingBuffer: true,
         });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -179,6 +185,11 @@ export default function BookstoreScene() {
         rooftopLayoutRef.current = rooftopLayout;
         rooftopLayout.group.visible = false;
         scene.add(rooftopLayout.group);
+
+        const quizKiosk = createQuizKiosk([0, 0, 0]);
+        scene.add(quizKiosk.group);
+        quizKiosk.group.visible = false;
+        quizKioskRef.current = quizKiosk;
 
         const booksManager = new DynamicBooksManager();
         scene.add(booksManager.group);
@@ -282,13 +293,23 @@ export default function BookstoreScene() {
                         }
                     }
                 }
-            } else if (floor === 3 && rooftopLayoutRef.current) {
-                const intersects = raycaster.intersectObjects(rooftopLayoutRef.current.group.children, true);
-                if (intersects.length > 0) {
-                    for (const hit of intersects) {
-                        if (hit.object.userData?.media) {
-                            setInspectedMedia(hit.object.userData.media);
-                            break;
+            } else if (floor === 3) {
+                if (quizKioskRef.current) {
+                    const intersects = raycaster.intersectObjects(quizKioskRef.current.group.children, true);
+                    if (intersects.length > 0) {
+                        setQuizOpen(true);
+                        return;
+                    }
+                }
+
+                if (rooftopLayoutRef.current) {
+                    const intersects = raycaster.intersectObjects(rooftopLayoutRef.current.group.children, true);
+                    if (intersects.length > 0) {
+                        for (const hit of intersects) {
+                            if (hit.object.userData?.media) {
+                                setInspectedMedia(hit.object.userData.media);
+                                break;
+                            }
                         }
                     }
                 }
@@ -333,6 +354,10 @@ export default function BookstoreScene() {
                     jukeboxRef.current.update(delta, currentIsAudio);
                 }
 
+                if (quizKioskRef.current && quizKioskRef.current.group.visible) {
+                    quizKioskRef.current.update(delta);
+                }
+
                 if (rooftopLayoutRef.current && rooftopLayoutRef.current.group.visible) {
                     rooftopLayoutRef.current.updateSakura(delta);
                 }
@@ -357,7 +382,7 @@ export default function BookstoreScene() {
                 renderer.dispose();
             }
         };
-    }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio, setCafeOpen]);
+    }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio, setCafeOpen, setQuizOpen]);
 
     useEffect(() => {
         if (!cameraControllerRef.current || !characterRef.current) return;
@@ -410,6 +435,7 @@ export default function BookstoreScene() {
         if (jukeboxRef.current) jukeboxRef.current.group.visible = currentFloor === 2;
 
         rooftopLayoutRef.current.group.visible = currentFloor === 3;
+        if (quizKioskRef.current) quizKioskRef.current.group.visible = currentFloor === 3;
 
         if (elevatorRef.current) {
             const floorColor = currentFloor === 1 ? 0x7dd3fc : currentFloor === 2 ? 0xf43f5e : 0xf472b6;
@@ -440,6 +466,7 @@ export default function BookstoreScene() {
             const rooftopLayout = rooftopLayoutRef.current;
             const obs = [
                 elevatorRef.current?.obstacle,
+                quizKioskRef.current?.obstacle,
                 ...rooftopLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);

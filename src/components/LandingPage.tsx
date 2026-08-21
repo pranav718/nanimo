@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
+import AnimeQuizModal from './bookstore/AnimeQuizModal';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
@@ -10,6 +11,7 @@ import BookstoreHUD from './bookstore/BookstoreHUD';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import GachaponModal from './bookstore/GachaponModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
+import PhotoModeModal from './bookstore/PhotoModeModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
@@ -36,6 +38,8 @@ export default function LandingPage() {
             <GachaponModal />
             <MangaReaderModal />
             <CafeSommelierModal />
+            <AnimeQuizModal />
+            <PhotoModeModal />
             <AmbientAudioPlayer />
         </main>
     );
