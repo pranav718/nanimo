@@ -1,4 +1,5 @@
 import { fetchAllBookstoreGenres, fetchTrendingMedia } from '@/lib/anilist';
+import { AtmospherePreset } from '@/components/bookstore/AtmospherePresets';
 import { AnimeMedia, BookstoreGenre, FloorLevel } from '@/types';
 import { create } from 'zustand';
 
@@ -35,6 +36,10 @@ interface BookstoreStore {
     isSearchOpen: boolean;
     isBookmarksOpen: boolean;
     isGachaponOpen: boolean;
+    isReaderOpen: boolean;
+    readingMedia: AnimeMedia | null;
+    isFirstPerson: boolean;
+    atmospherePreset: AtmospherePreset;
     gachaponResult: AnimeMedia | null;
     activeJukeboxStation: number;
     playerPosition: [number, number, number];
@@ -52,6 +57,10 @@ interface BookstoreStore {
     setSearchOpen: (open: boolean) => void;
     setBookmarksOpen: (open: boolean) => void;
     setGachaponOpen: (open: boolean) => void;
+    setReaderOpen: (open: boolean) => void;
+    setReadingMedia: (media: AnimeMedia | null) => void;
+    toggleFirstPerson: () => void;
+    setAtmospherePreset: (preset: AtmospherePreset) => void;
     setGachaponResult: (media: AnimeMedia | null) => void;
     setActiveJukeboxStation: (idx: number) => void;
     toggleSaveMedia: (media: AnimeMedia) => void;
@@ -101,6 +110,10 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isSearchOpen: false,
     isBookmarksOpen: false,
     isGachaponOpen: false,
+    isReaderOpen: false,
+    readingMedia: null,
+    isFirstPerson: false,
+    atmospherePreset: 'midnight',
     gachaponResult: null,
     activeJukeboxStation: 0,
     playerPosition: [0, 0, 0],
@@ -153,6 +166,22 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setGachaponOpen: (open: boolean) => {
         set({ isGachaponOpen: open });
+    },
+
+    setReaderOpen: (open: boolean) => {
+        set({ isReaderOpen: open });
+    },
+
+    setReadingMedia: (media: AnimeMedia | null) => {
+        set({ readingMedia: media, isReaderOpen: Boolean(media) });
+    },
+
+    toggleFirstPerson: () => {
+        set((state) => ({ isFirstPerson: !state.isFirstPerson }));
+    },
+
+    setAtmospherePreset: (preset: AtmospherePreset) => {
+        set({ atmospherePreset: preset });
     },
 
     setGachaponResult: (media: AnimeMedia | null) => {
