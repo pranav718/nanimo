@@ -13,6 +13,7 @@ import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
+import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
@@ -42,6 +43,7 @@ export default function LandingPage() {
             <AnimeQuizModal />
             <PhotoModeModal />
             <EmoteRadialWheel />
+            <ShelfExportModal />
             <AmbientAudioPlayer />
         </main>
     );
