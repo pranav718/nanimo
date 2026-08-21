@@ -11,7 +11,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -44,6 +44,7 @@ interface BookstoreStore {
     isPhotoMode: boolean;
     isQuizOpen: boolean;
     isEmoteWheelOpen: boolean;
+    isExportOpen: boolean;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
     isFirstPerson: boolean;
@@ -71,6 +72,7 @@ interface BookstoreStore {
     setPhotoMode: (open: boolean) => void;
     setQuizOpen: (open: boolean) => void;
     setEmoteWheelOpen: (open: boolean) => void;
+    setExportOpen: (open: boolean) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
     toggleFirstPerson: () => void;
@@ -131,6 +133,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isPhotoMode: false,
     isQuizOpen: false,
     isEmoteWheelOpen: false,
+    isExportOpen: false,
     activeEmote: null,
     readingMedia: null,
     isFirstPerson: false,
@@ -211,6 +214,10 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setEmoteWheelOpen: (open: boolean) => {
         set({ isEmoteWheelOpen: open });
+    },
+
+    setExportOpen: (open: boolean) => {
+        set({ isExportOpen: open });
     },
 
     playEmote: (emote: AvatarEmote) => {
