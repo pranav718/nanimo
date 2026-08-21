@@ -4,10 +4,34 @@ import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useEffect, useRef } from 'react';
 
 export default function AmbientAudioPlayer() {
-    const { isAudioPlaying } = useBookstoreStore();
+    const { isAudioPlaying, currentFloor } = useBookstoreStore();
     const audioCtxRef = useRef<AudioContext | null>(null);
     const rainNodeRef = useRef<AudioNode | null>(null);
     const chordsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const lastFloorRef = useRef<number>(currentFloor);
+
+    const playFloorChime = (ctx: AudioContext) => {
+        const notes = [587.33, 493.88, 392.00, 440.00, 587.33];
+        const now = ctx.currentTime;
+
+        notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.18);
+
+            gain.gain.setValueAtTime(0, now + idx * 0.18);
+            gain.gain.linearRampToValueAtTime(0.04, now + idx * 0.18 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.18 + 0.6);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(now + idx * 0.18);
+            osc.stop(now + idx * 0.18 + 0.65);
+        });
+    };
 
     useEffect(() => {
         if (!isAudioPlaying) {
@@ -98,7 +122,7 @@ export default function AmbientAudioPlayer() {
         };
 
         playChord();
-        chordsIntervalRef.current = setInterval(playChord, 5500);
+        chordsIntervalRef.current = setInterval(playChord, 8000);
 
         return () => {
             if (chordsIntervalRef.current) {
@@ -107,6 +131,15 @@ export default function AmbientAudioPlayer() {
             }
         };
     }, [isAudioPlaying]);
+
+    useEffect(() => {
+        if (currentFloor !== lastFloorRef.current) {
+            lastFloorRef.current = currentFloor;
+            if (isAudioPlaying && audioCtxRef.current && audioCtxRef.current.state === 'running') {
+                playFloorChime(audioCtxRef.current);
+            }
+        }
+    }, [currentFloor, isAudioPlaying]);
 
     return null;
 }
