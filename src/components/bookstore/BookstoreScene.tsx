@@ -4,6 +4,7 @@ import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
+import { applyAtmosphere } from './AtmospherePresets';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import BookstoreMiniMap from './BookstoreMiniMap';
 import { BookshelfObstacle } from './BookshelfGeometry';
@@ -32,6 +33,7 @@ export default function BookstoreScene() {
     const gachaponRef = useRef<GachaponMachineResult | null>(null);
     const personalShelfRef = useRef<PersonalShelfResult | null>(null);
     const jukeboxRef = useRef<JukeboxResult | null>(null);
+    const envLightsRef = useRef<THREE.Light[]>([]);
     const animationFrameRef = useRef<number | null>(null);
     const lastTimeRef = useRef<number>(performance.now());
     const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -51,6 +53,8 @@ export default function BookstoreScene() {
         toggleAudio,
         setBookmarksOpen,
         isAudioPlaying,
+        isFirstPerson,
+        atmospherePreset,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -123,9 +127,11 @@ export default function BookstoreScene() {
             0.1,
             200
         );
+        cameraController.isFirstPerson = isFirstPerson;
         cameraControllerRef.current = cameraController;
 
         const env = createBookstoreEnvironment();
+        envLightsRef.current = env.lights;
         scene.add(env.group);
 
         const elevator = createElevator(currentFloor);
@@ -324,6 +330,17 @@ export default function BookstoreScene() {
             }
         };
     }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio]);
+
+    useEffect(() => {
+        if (!cameraControllerRef.current || !characterRef.current) return;
+        cameraControllerRef.current.isFirstPerson = isFirstPerson;
+        characterRef.current.avatar.group.visible = !isFirstPerson;
+    }, [isFirstPerson]);
+
+    useEffect(() => {
+        if (!sceneRef.current || envLightsRef.current.length === 0) return;
+        applyAtmosphere(atmospherePreset, sceneRef.current, envLightsRef.current);
+    }, [atmospherePreset]);
 
     useEffect(() => {
         if (!booksManagerRef.current) return;
