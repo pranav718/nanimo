@@ -1,5 +1,6 @@
 import { fetchAllBookstoreGenres, fetchTrendingMedia } from '@/lib/anilist';
 import { AtmospherePreset } from '@/components/bookstore/AtmospherePresets';
+import { AvatarEmote } from '@/components/bookstore/CharacterAvatar';
 import { AnimeMedia, BookstoreGenre, FloorLevel } from '@/types';
 import { create } from 'zustand';
 
@@ -42,6 +43,8 @@ interface BookstoreStore {
     isSittingCinema: boolean;
     isPhotoMode: boolean;
     isQuizOpen: boolean;
+    isEmoteWheelOpen: boolean;
+    activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
     isFirstPerson: boolean;
     atmospherePreset: AtmospherePreset;
@@ -67,6 +70,8 @@ interface BookstoreStore {
     setSittingCinema: (sitting: boolean) => void;
     setPhotoMode: (open: boolean) => void;
     setQuizOpen: (open: boolean) => void;
+    setEmoteWheelOpen: (open: boolean) => void;
+    playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
     toggleFirstPerson: () => void;
     setAtmospherePreset: (preset: AtmospherePreset) => void;
@@ -125,6 +130,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isSittingCinema: false,
     isPhotoMode: false,
     isQuizOpen: false,
+    isEmoteWheelOpen: false,
+    activeEmote: null,
     readingMedia: null,
     isFirstPerson: false,
     atmospherePreset: 'midnight',
@@ -200,6 +207,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setQuizOpen: (open: boolean) => {
         set({ isQuizOpen: open });
+    },
+
+    setEmoteWheelOpen: (open: boolean) => {
+        set({ isEmoteWheelOpen: open });
+    },
+
+    playEmote: (emote: AvatarEmote) => {
+        set({ activeEmote: emote });
     },
 
     setReadingMedia: (media: AnimeMedia | null) => {
