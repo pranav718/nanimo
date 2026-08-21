@@ -10,11 +10,12 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat';
     id: string;
     name: string;
     genre?: BookstoreGenre;
     media?: AnimeMedia;
+    seatPos?: [number, number, number];
 }
 
 interface BookstoreStore {
@@ -37,6 +38,8 @@ interface BookstoreStore {
     isBookmarksOpen: boolean;
     isGachaponOpen: boolean;
     isReaderOpen: boolean;
+    isCafeOpen: boolean;
+    isSittingCinema: boolean;
     readingMedia: AnimeMedia | null;
     isFirstPerson: boolean;
     atmospherePreset: AtmospherePreset;
@@ -58,6 +61,8 @@ interface BookstoreStore {
     setBookmarksOpen: (open: boolean) => void;
     setGachaponOpen: (open: boolean) => void;
     setReaderOpen: (open: boolean) => void;
+    setCafeOpen: (open: boolean) => void;
+    setSittingCinema: (sitting: boolean) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
     toggleFirstPerson: () => void;
     setAtmospherePreset: (preset: AtmospherePreset) => void;
@@ -70,6 +75,7 @@ interface BookstoreStore {
     setAvatarCustomization: (custom: Partial<AvatarCustomizationState>) => void;
     loadBookstoreData: () => Promise<void>;
     rollGachapon: () => AnimeMedia | null;
+    getCafeRecommendation: (mood: string) => AnimeMedia | null;
 }
 
 const defaultGenreRecord: Record<BookstoreGenre, AnimeMedia[]> = {
@@ -111,6 +117,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isBookmarksOpen: false,
     isGachaponOpen: false,
     isReaderOpen: false,
+    isCafeOpen: false,
+    isSittingCinema: false,
     readingMedia: null,
     isFirstPerson: false,
     atmospherePreset: 'midnight',
@@ -125,7 +133,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     },
 
     setCurrentFloor: (floor: FloorLevel) => {
-        set({ currentFloor: floor });
+        set({ currentFloor: floor, isSittingCinema: false });
     },
 
     setActiveGenre: (genre: BookstoreGenre | null) => {
@@ -170,6 +178,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setReaderOpen: (open: boolean) => {
         set({ isReaderOpen: open });
+    },
+
+    setCafeOpen: (open: boolean) => {
+        set({ isCafeOpen: open });
+    },
+
+    setSittingCinema: (sitting: boolean) => {
+        set({ isSittingCinema: sitting });
     },
 
     setReadingMedia: (media: AnimeMedia | null) => {
@@ -236,6 +252,25 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
         const randomItem = all[Math.floor(Math.random() * all.length)];
         set({ gachaponResult: randomItem, isGachaponOpen: true });
         return randomItem;
+    },
+
+    getCafeRecommendation: (mood: string) => {
+        const { mangaGenres, animeGenres, trendingAnime, trendingManga } = get();
+        let targetGenre: BookstoreGenre = 'Slice of Life';
+
+        if (mood === 'cozy') targetGenre = 'Slice of Life';
+        else if (mood === 'hype') targetGenre = 'Action';
+        else if (mood === 'romance') targetGenre = 'Romance';
+        else if (mood === 'mystery') targetGenre = 'Mystery';
+        else if (mood === 'isekai') targetGenre = 'Fantasy';
+        else if (mood === 'cyber') targetGenre = 'Sci-Fi';
+
+        const pool = [...(mangaGenres[targetGenre] || []), ...(animeGenres[targetGenre] || [])];
+        if (pool.length > 0) {
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+        const fallback = [...trendingAnime, ...trendingManga];
+        return fallback.length > 0 ? fallback[0] : null;
     },
 
     loadBookstoreData: async () => {
