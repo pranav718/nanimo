@@ -6,11 +6,14 @@ export interface AvatarCustomization {
     pantsColor: string;
 }
 
+export type AvatarEmote = 'wave' | 'read' | 'dance' | 'cheer' | 'think' | 'bow' | null;
+
 export interface AvatarController {
     group: THREE.Group;
     update: (speed: number, delta: number) => void;
     setCustomization: (custom: AvatarCustomization) => void;
     setSitting: (sitting: boolean) => void;
+    playEmote: (emote: AvatarEmote) => void;
     leftArm: THREE.Group;
     rightArm: THREE.Group;
     leftLeg: THREE.Group;
@@ -136,6 +139,14 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
     rightArm.position.set(0.35, 0.25, 0);
     torsoGroup.add(rightArm);
 
+    const miniBookGeo = new THREE.BoxGeometry(0.3, 0.38, 0.06);
+    const miniBookMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3 });
+    const miniBook = new THREE.Mesh(miniBookGeo, miniBookMat);
+    miniBook.position.set(0, -0.1, 0.35);
+    miniBook.rotation.x = Math.PI / 6;
+    miniBook.visible = false;
+    torsoGroup.add(miniBook);
+
     group.add(torsoGroup);
 
     const leftLeg = createLimb(0.18, 0.65, 0.18, pantsMat, shoesMat);
@@ -147,7 +158,9 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
     group.add(rightLeg);
 
     let walkCycle = 0;
+    let emoteTime = 0;
     let isSittingState = false;
+    let currentEmote: AvatarEmote = null;
 
     const setCustomization = (newCustom: AvatarCustomization) => {
         hairMat.color.set(newCustom.hairColor);
@@ -157,6 +170,13 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
 
     const setSitting = (sitting: boolean) => {
         isSittingState = sitting;
+        if (sitting) currentEmote = null;
+    };
+
+    const playEmote = (emote: AvatarEmote) => {
+        currentEmote = emote;
+        emoteTime = 0;
+        miniBook.visible = emote === 'read';
     };
 
     const update = (speed: number, delta: number) => {
@@ -167,29 +187,94 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
             rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -Math.PI / 4, 0.15);
             torsoGroup.position.y = THREE.MathUtils.lerp(torsoGroup.position.y, 0.6, 0.15);
             headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, 0, 0.15);
+            headGroup.rotation.x = 0;
             return;
         }
 
         if (speed > 0.1) {
+            currentEmote = null;
+            miniBook.visible = false;
             walkCycle += delta * speed * 12;
             const swing = Math.sin(walkCycle) * 0.65;
 
             leftLeg.rotation.x = swing;
             rightLeg.rotation.x = -swing;
+            leftLeg.rotation.z = 0;
+            rightLeg.rotation.z = 0;
 
             leftArm.rotation.x = -swing * 0.8;
             rightArm.rotation.x = swing * 0.8;
+            leftArm.rotation.z = 0;
+            rightArm.rotation.z = 0;
 
             torsoGroup.position.y = 0.95 + Math.abs(Math.sin(walkCycle * 2)) * 0.04;
+            torsoGroup.rotation.set(0, 0, 0);
             headGroup.rotation.y = Math.sin(walkCycle) * 0.05;
+            headGroup.rotation.x = 0;
+            return;
+        }
+
+        walkCycle = 0;
+        leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 0.15);
+        rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 0.15);
+        leftLeg.rotation.z = THREE.MathUtils.lerp(leftLeg.rotation.z, 0, 0.15);
+        rightLeg.rotation.z = THREE.MathUtils.lerp(rightLeg.rotation.z, 0, 0.15);
+
+        if (currentEmote) {
+            emoteTime += delta;
+
+            if (currentEmote === 'wave') {
+                rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -Math.PI * 0.8, 0.2);
+                rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, -0.4 + Math.sin(emoteTime * 12) * 0.35, 0.3);
+                leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 0.15);
+                leftArm.rotation.z = 0;
+                headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, 0.2, 0.1);
+            } else if (currentEmote === 'read') {
+                leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -Math.PI * 0.4, 0.2);
+                leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0.3, 0.2);
+                rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -Math.PI * 0.4, 0.2);
+                rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, -0.3, 0.2);
+                headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, 0.3, 0.2);
+                torsoGroup.position.y = 0.95;
+            } else if (currentEmote === 'dance') {
+                const bounce = Math.sin(emoteTime * 8);
+                torsoGroup.position.y = 0.95 + Math.abs(bounce) * 0.08;
+                torsoGroup.rotation.z = bounce * 0.1;
+                leftArm.rotation.x = Math.sin(emoteTime * 8) * 0.8;
+                rightArm.rotation.x = -Math.sin(emoteTime * 8) * 0.8;
+                leftArm.rotation.z = 0.4;
+                rightArm.rotation.z = -0.4;
+                headGroup.rotation.y = bounce * 0.2;
+            } else if (currentEmote === 'cheer') {
+                const hop = Math.abs(Math.sin(emoteTime * 6));
+                torsoGroup.position.y = 0.95 + hop * 0.12;
+                leftArm.rotation.x = -Math.PI * 0.85;
+                rightArm.rotation.x = -Math.PI * 0.85;
+                leftArm.rotation.z = 0.3;
+                rightArm.rotation.z = -0.3;
+                headGroup.rotation.x = -0.25;
+            } else if (currentEmote === 'think') {
+                rightArm.rotation.x = -Math.PI * 0.55;
+                rightArm.rotation.z = -0.35;
+                leftArm.rotation.x = -Math.PI * 0.2;
+                leftArm.rotation.z = 0.2;
+                headGroup.rotation.x = 0.2;
+                headGroup.rotation.y = -0.25;
+                headGroup.rotation.z = -0.15;
+            } else if (currentEmote === 'bow') {
+                torsoGroup.rotation.x = THREE.MathUtils.lerp(torsoGroup.rotation.x, 0.55, 0.15);
+                leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -0.3, 0.15);
+                rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.3, 0.15);
+                headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, 0.2, 0.15);
+            }
         } else {
-            walkCycle = 0;
-            leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 0.15);
-            rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 0.15);
             leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 0.15);
             rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, 0, 0.15);
+            leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, 0.15);
+            rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, 0, 0.15);
             torsoGroup.position.y = THREE.MathUtils.lerp(torsoGroup.position.y, 0.95, 0.15);
-            headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, 0, 0.15);
+            torsoGroup.rotation.set(0, 0, 0);
+            headGroup.rotation.set(0, 0, 0);
         }
     };
 
@@ -198,6 +283,7 @@ export function createCharacterAvatar(initialCustom?: AvatarCustomization): Avat
         update,
         setCustomization,
         setSitting,
+        playEmote,
         leftArm,
         rightArm,
         leftLeg,
