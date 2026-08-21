@@ -1,5 +1,6 @@
 'use client';
 
+import { AtmospherePreset } from './AtmospherePresets';
 import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect } from 'react';
 
@@ -18,6 +19,10 @@ export default function BookstoreHUD() {
         setSearchOpen,
         setBookmarksOpen,
         savedMedia,
+        isFirstPerson,
+        toggleFirstPerson,
+        atmospherePreset,
+        setAtmospherePreset,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -28,6 +33,15 @@ export default function BookstoreHUD() {
 
     const current = floorNames[currentFloor] || floorNames[1];
 
+    const cycleAtmosphere = () => {
+        const next: Record<AtmospherePreset, AtmospherePreset> = {
+            midnight: 'sunset',
+            sunset: 'rain',
+            rain: 'midnight',
+        };
+        setAtmospherePreset(next[atmospherePreset] || 'midnight');
+    };
+
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
         if (e.key === 'm' || e.key === 'M') {
@@ -36,10 +50,12 @@ export default function BookstoreHUD() {
             setWardrobeOpen(true);
         } else if (e.key === 'b' || e.key === 'B') {
             setBookmarksOpen(true);
+        } else if (e.key === 'v' || e.key === 'V') {
+            toggleFirstPerson();
         } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
             setHelpOpen(!isHelpOpen);
         }
-    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, setHelpOpen, isHelpOpen]);
+    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, toggleFirstPerson, setHelpOpen, isHelpOpen]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -100,6 +116,25 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={toggleFirstPerson}
+                            className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wider transition-all backdrop-blur-md ${
+                                isFirstPerson
+                                    ? 'border-emerald-400/60 bg-emerald-400/20 text-emerald-300 shadow-md'
+                                    : 'border-white/15 bg-black/50 text-white/80 hover:bg-white/10'
+                            }`}
+                        >
+                            <span>{isFirstPerson ? '1st Person' : '3rd Person'}</span>
+                            <kbd className="hidden sm:inline-block rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">V</kbd>
+                        </button>
+
+                        <button
+                            onClick={cycleAtmosphere}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span className="capitalize">{atmospherePreset}</span>
                         </button>
 
                         <button
@@ -187,7 +222,7 @@ export default function BookstoreHUD() {
                         <span>•</span>
                         <span>Drag to Look</span>
                         <span>•</span>
-                        <span>Click Volume to Inspect</span>
+                        <span>V for 1st/3rd Person</span>
                         <span>•</span>
                         <span>B for Saved Shelf</span>
                         <span>•</span>
@@ -230,8 +265,8 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">Spacebar</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Camera Orbit</span>
-                                <span className="font-mono text-amber-300">Mouse Drag</span>
+                                <span className="text-white/80 font-medium">Camera Perspective Toggle</span>
+                                <span className="font-mono text-amber-300">V (1st / 3rd Person)</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Inspect Volume / Gachapon</span>
