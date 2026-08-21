@@ -1,5 +1,6 @@
 'use client';
 
+import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface TouchJoystickProps {
@@ -15,6 +16,7 @@ export default function TouchJoystick({
     onInteract,
     showInteract = false,
 }: TouchJoystickProps) {
+    const isPhotoMode = useBookstoreStore((s) => s.isPhotoMode);
     const [active, setActive] = useState(false);
     const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
     const [knobPos, setKnobPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -39,100 +41,112 @@ export default function TouchJoystick({
         setActive(true);
     }, []);
 
-    const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (touchIdRef.current === null || !origin) return;
+    const handleTouchMove = useCallback(
+        (e: React.TouchEvent) => {
+            if (touchIdRef.current === null || !origin || !zoneRef.current) return;
 
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            const touch = e.changedTouches[i];
-            if (touch.identifier === touchIdRef.current) {
-                const rect = zoneRef.current?.getBoundingClientRect();
-                if (!rect) return;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                if (touch.identifier === touchIdRef.current) {
+                    const rect = zoneRef.current.getBoundingClientRect();
+                    const currentX = touch.clientX - rect.left;
+                    const currentY = touch.clientY - rect.top;
 
-                const currentX = touch.clientX - rect.left;
-                const currentY = touch.clientY - rect.top;
+                    let dx = currentX - origin.x;
+                    let dy = currentY - origin.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
 
-                const dx = currentX - origin.x;
-                const dy = currentY - origin.y;
-                const dist = Math.hypot(dx, dy);
+                    if (dist > radius) {
+                        dx = (dx / dist) * radius;
+                        dy = (dy / dist) * radius;
+                    }
 
-                const clampedDist = Math.min(dist, radius);
-                const angle = Math.atan2(dy, dx);
+                    setKnobPos({ x: dx, y: dy });
 
-                const knobX = Math.cos(angle) * clampedDist;
-                const knobY = Math.sin(angle) * clampedDist;
-
-                setKnobPos({ x: knobX, y: knobY });
-
-                const normalizedX = knobX / radius;
-                const normalizedY = -knobY / radius;
-                onMove(normalizedX, normalizedY);
-                break;
+                    const normX = dx / radius;
+                    const normY = dy / radius;
+                    onMove(normX, normY);
+                    break;
+                }
             }
-        }
-    }, [origin, onMove]);
+        },
+        [origin, onMove]
+    );
 
-    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-        for (let i = 0; i < e.changedTouches.length; i++) {
-            if (e.changedTouches[i].identifier === touchIdRef.current) {
-                touchIdRef.current = null;
-                setActive(false);
-                setOrigin(null);
-                setKnobPos({ x: 0, y: 0 });
-                onMove(0, 0);
-                break;
+    const handleTouchEnd = useCallback(
+        (e: React.TouchEvent) => {
+            if (touchIdRef.current === null) return;
+
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                if (touch.identifier === touchIdRef.current) {
+                    touchIdRef.current = null;
+                    setActive(false);
+                    setOrigin(null);
+                    setKnobPos({ x: 0, y: 0 });
+                    onMove(0, 0);
+                    break;
+                }
             }
-        }
+        },
+        [onMove]
+    );
+
+    useEffect(() => {
+        return () => {
+            onMove(0, 0);
+        };
     }, [onMove]);
 
+    if (isPhotoMode) return null;
+
     return (
-        <>
+        <div className="pointer-events-none fixed inset-0 z-30 md:hidden flex justify-between p-6">
             <div
                 ref={zoneRef}
-                className="fixed bottom-0 left-0 w-1/2 h-1/2 z-20 touch-none md:hidden select-none"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 onTouchCancel={handleTouchEnd}
+                className="pointer-events-auto relative h-44 w-44 touch-none rounded-full"
             >
                 {active && origin && (
                     <div
-                        className="absolute pointer-events-none rounded-full border border-white/30 bg-white/10 backdrop-blur-md -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200"
-                        style={{
-                            left: origin.x,
-                            top: origin.y,
-                            width: radius * 2,
-                            height: radius * 2,
-                        }}
+                        style={{ left: origin.x, top: origin.y }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none h-24 w-24 rounded-full border border-white/20 bg-black/40 backdrop-blur-md"
                     >
                         <div
-                            className="absolute rounded-full bg-white/60 shadow-lg -translate-x-1/2 -translate-y-1/2"
                             style={{
-                                left: radius + knobPos.x,
-                                top: radius + knobPos.y,
-                                width: 44,
-                                height: 44,
+                                transform: `translate(calc(-50% + ${knobPos.x}px), calc(-50% + ${knobPos.y}px))`,
                             }}
+                            className="absolute top-1/2 left-1/2 h-10 w-10 rounded-full bg-amber-400 shadow-lg shadow-amber-400/50"
                         />
                     </div>
                 )}
             </div>
 
-            <div className="fixed bottom-8 right-8 z-20 flex flex-col gap-4 md:hidden">
+            <div className="pointer-events-auto flex flex-col justify-end gap-3 self-end mb-4">
                 {showInteract && (
                     <button
-                        onClick={onInteract}
-                        className="w-16 h-16 rounded-full bg-amber-500/80 border border-amber-300 text-white font-bold text-lg shadow-xl active:scale-95 transition-transform backdrop-blur-md"
+                        onTouchStart={(e) => {
+                            e.preventDefault();
+                            onInteract();
+                        }}
+                        className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-amber-400 bg-black/70 text-xs font-black text-amber-300 shadow-xl backdrop-blur-md active:scale-95"
                     >
                         E
                     </button>
                 )}
                 <button
-                    onClick={onJump}
-                    className="w-16 h-16 rounded-full bg-white/20 border border-white/30 text-white font-semibold text-sm shadow-xl active:scale-95 transition-transform backdrop-blur-md"
+                    onTouchStart={(e) => {
+                        e.preventDefault();
+                        onJump();
+                    }}
+                    className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-black/60 text-xs font-bold text-white shadow-xl backdrop-blur-md active:scale-95"
                 >
                     JUMP
                 </button>
             </div>
-        </>
+        </div>
     );
 }

@@ -23,6 +23,8 @@ export default function BookstoreHUD() {
         toggleFirstPerson,
         atmospherePreset,
         setAtmospherePreset,
+        isPhotoMode,
+        setPhotoMode,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -52,15 +54,19 @@ export default function BookstoreHUD() {
             setBookmarksOpen(true);
         } else if (e.key === 'v' || e.key === 'V') {
             toggleFirstPerson();
+        } else if (e.key === 'p' || e.key === 'P') {
+            setPhotoMode(!isPhotoMode);
         } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
             setHelpOpen(!isHelpOpen);
         }
-    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, toggleFirstPerson, setHelpOpen, isHelpOpen]);
+    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, toggleFirstPerson, setPhotoMode, isPhotoMode, setHelpOpen, isHelpOpen]);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handleKeyDown]);
+
+    if (isPhotoMode) return null;
 
     return (
         <>
@@ -116,6 +122,14 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setPhotoMode(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Photo</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">P</kbd>
                         </button>
 
                         <button
@@ -206,6 +220,10 @@ export default function BookstoreHUD() {
                                     ? 'Turn Gachapon Machine Crank'
                                     : proximityTarget.type === 'jukebox'
                                     ? 'Toggle Anime Lo-Fi Jukebox'
+                                    : proximityTarget.type === 'quiz'
+                                    ? 'Take Anime Soul Personality Quiz'
+                                    : proximityTarget.type === 'cafe'
+                                    ? 'Talk to Barista Aoi'
                                     : `Inspect ${proximityTarget.name}`}
                             </span>
                         </div>
@@ -220,13 +238,11 @@ export default function BookstoreHUD() {
                         <span>•</span>
                         <span>Space to Jump</span>
                         <span>•</span>
-                        <span>Drag to Look</span>
+                        <span>P for Photo Studio</span>
                         <span>•</span>
                         <span>V for 1st/3rd Person</span>
                         <span>•</span>
                         <span>B for Saved Shelf</span>
-                        <span>•</span>
-                        <span>C for Wardrobe</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -265,11 +281,15 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">Spacebar</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Photo Studio Mode</span>
+                                <span className="font-mono text-amber-300">P</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Camera Perspective Toggle</span>
                                 <span className="font-mono text-amber-300">V (1st / 3rd Person)</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Inspect Volume / Gachapon</span>
+                                <span className="text-white/80 font-medium">Inspect / Interact</span>
                                 <span className="font-mono text-amber-300">E / Left Click</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">

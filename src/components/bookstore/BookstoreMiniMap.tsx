@@ -19,7 +19,7 @@ interface LocationPoint {
 }
 
 export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
-    const { currentFloor, setCurrentFloor, playerPosition, isFastTravelOpen, setFastTravelOpen } = useBookstoreStore();
+    const { currentFloor, setCurrentFloor, playerPosition, isFastTravelOpen, setFastTravelOpen, isPhotoMode } = useBookstoreStore();
     const [isExpanded, setIsExpanded] = useState(false);
 
     const locations: LocationPoint[] = [
@@ -29,9 +29,13 @@ export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
         { id: 'm-action', label: 'Action & Shonen', labelJp: '少年', x: 13, z: 10, floor: 1, genre: 'Action' },
         { id: 'm-fantasy', label: 'Fantasy & Isekai', labelJp: '異世界', x: 13, z: 0, floor: 1, genre: 'Fantasy' },
         { id: 'm-scifi', label: 'Sci-Fi Vault', labelJp: 'SF', x: 13, z: -10, floor: 1, genre: 'Sci-Fi' },
+        { id: 'm-cafe', label: 'Cafe Nanimo Barista', labelJp: '喫茶', x: 18, z: 8, floor: 1 },
+        { id: 'm-gacha', label: 'Gachapon Machine', labelJp: 'ガチャ', x: -18, z: 8, floor: 1 },
+        { id: 'm-shelf', label: 'My Saved Shelf', labelJp: '私の棚', x: -18, z: -6, floor: 1 },
         { id: 'm-elevator', label: 'Glass Elevator', labelJp: '昇降機', x: 0, z: -16, floor: 1 },
 
         { id: 'a-cinema', label: 'Main Cinema Screen', labelJp: '大劇場', x: 0, z: -10, floor: 2 },
+        { id: 'a-jukebox', label: 'Retro Anime Jukebox', labelJp: '蓄音機', x: -18, z: -10, floor: 2 },
         { id: 'a-action', label: 'Action Anime Pod', labelJp: '少年アニメ', x: -13, z: 8, floor: 2, genre: 'Action' },
         { id: 'a-romance', label: 'Romance Lounge', labelJp: '恋愛アニメ', x: -13, z: -2, floor: 2, genre: 'Romance' },
         { id: 'a-mystery', label: 'Psychological Pod', labelJp: '青年アニメ', x: -13, z: 16, floor: 2, genre: 'Mystery' },
@@ -40,6 +44,7 @@ export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
         { id: 'a-slice', label: 'Chill Lounge', labelJp: '日常アニメ', x: 13, z: 16, floor: 2, genre: 'Slice of Life' },
         { id: 'a-elevator', label: 'Glass Elevator', labelJp: '昇降機', x: 0, z: -16, floor: 2 },
 
+        { id: 'r-quiz', label: 'Soul Personality Quiz', labelJp: '適性診断', x: 0, z: 0, floor: 3 },
         { id: 'r-anime-podium', label: 'Top Anime Showcase', labelJp: '最高傑作', x: 0, z: -10, floor: 3 },
         { id: 'r-manga-podium', label: 'Top Manga Showcase', labelJp: '名作漫画', x: 0, z: 10, floor: 3 },
         { id: 'r-garden', label: 'Sakura Garden Deck', labelJp: '桜庭園', x: -12, z: 0, floor: 3 },
@@ -69,6 +74,8 @@ export default function BookstoreMiniMap({ onTeleport }: MiniMapProps) {
         setFastTravelOpen(false);
         setIsExpanded(false);
     };
+
+    if (isPhotoMode) return null;
 
     return (
         <>

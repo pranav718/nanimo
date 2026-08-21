@@ -321,6 +321,16 @@ export class CharacterController {
                     return;
                 }
             }
+        } else if (floor === 3) {
+            const quizPos = new THREE.Vector3(0, 0, 0);
+            if (this.position.distanceTo(quizPos) < 3.5) {
+                store.setProximityTarget({
+                    type: 'quiz',
+                    id: 'quiz-1',
+                    name: 'Anime Soul Personality Quiz',
+                });
+                return;
+            }
         }
 
         let nearestAisle: { genre: BookstoreGenre; distance: number } | null = null;
