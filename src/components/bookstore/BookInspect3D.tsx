@@ -6,7 +6,14 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 export default function BookInspect3D() {
-    const { inspectedMedia, setInspectedMedia, toggleSaveMedia, isMediaSaved } = useBookstoreStore();
+    const {
+        inspectedMedia,
+        setInspectedMedia,
+        toggleSaveMedia,
+        isMediaSaved,
+        setReadingMedia,
+    } = useBookstoreStore();
+
     const containerRef = useRef<HTMLDivElement>(null);
     const sceneRef = useRef<THREE.Scene | null>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -238,7 +245,17 @@ export default function BookInspect3D() {
                         </p>
                     </div>
 
-                    <div className="flex flex-col gap-3 mt-6 pt-4 border-t border-white/10">
+                    <div className="flex flex-col gap-2.5 mt-6 pt-4 border-t border-white/10">
+                        <button
+                            onClick={() => {
+                                setReadingMedia(inspectedMedia);
+                                handleClose();
+                            }}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-black font-bold uppercase tracking-wider text-xs shadow-lg hover:from-amber-300 hover:to-orange-400 transition-all"
+                        >
+                            Read Chapter 1 Preview
+                        </button>
+
                         <button
                             onClick={() => toggleSaveMedia(inspectedMedia)}
                             className={`w-full py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
