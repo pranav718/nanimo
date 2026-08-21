@@ -353,18 +353,29 @@ export class CharacterController {
                 name: `${nearestAisle.genre} Section`,
                 genre: nearestAisle.genre,
             });
+            return;
+        }
+
+        const terminalPos = new THREE.Vector3(4.5, 0, -17);
+        if (this.position.distanceTo(terminalPos) < 2.8) {
+            store.setProximityTarget({
+                type: 'terminal',
+                id: 'terminal-1',
+                name: 'Floor Directory Touch Terminal',
+            });
+            return;
+        }
+
+        const elevatorPos = new THREE.Vector3(0, 0, -18);
+        if (this.position.distanceTo(elevatorPos) < 3.5) {
+            store.setProximityTarget({
+                type: 'elevator',
+                id: 'elevator-1',
+                name: `Glass Elevator (Floor ${floor})`,
+            });
         } else {
-            const elevatorPos = new THREE.Vector3(0, 0, -18);
-            if (this.position.distanceTo(elevatorPos) < 3.5) {
-                store.setProximityTarget({
-                    type: 'elevator',
-                    id: 'elevator-1',
-                    name: `Glass Elevator (Floor ${floor})`,
-                });
-            } else {
-                store.setActiveGenre(null);
-                store.setProximityTarget(null);
-            }
+            store.setActiveGenre(null);
+            store.setProximityTarget(null);
         }
     }
 

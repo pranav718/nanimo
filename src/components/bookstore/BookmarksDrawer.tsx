@@ -4,21 +4,31 @@ import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useCallback, useEffect } from 'react';
 
 export default function BookmarksDrawer() {
-    const { isBookmarksOpen, setBookmarksOpen, savedMedia, setInspectedMedia, toggleSaveMedia } = useBookstoreStore();
+    const {
+        isBookmarksOpen,
+        setBookmarksOpen,
+        savedMedia,
+        setInspectedMedia,
+        toggleSaveMedia,
+        setExportOpen,
+    } = useBookstoreStore();
 
     const handleClose = useCallback(() => {
         setBookmarksOpen(false);
     }, [setBookmarksOpen]);
 
-    const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        if (e.key === 'b' || e.key === 'B') {
-            if (!(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-                setBookmarksOpen(!isBookmarksOpen);
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key === 'b' || e.key === 'B') {
+                if (!(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+                    setBookmarksOpen(!isBookmarksOpen);
+                }
+            } else if (e.key === 'Escape' && isBookmarksOpen) {
+                handleClose();
             }
-        } else if (e.key === 'Escape' && isBookmarksOpen) {
-            handleClose();
-        }
-    }, [isBookmarksOpen, setBookmarksOpen, handleClose]);
+        },
+        [isBookmarksOpen, setBookmarksOpen, handleClose]
+    );
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -98,6 +108,20 @@ export default function BookmarksDrawer() {
                         })
                     )}
                 </div>
+
+                {savedMedia.length > 0 && (
+                    <div className="pt-4 mt-2 border-t border-white/10">
+                        <button
+                            onClick={() => {
+                                setExportOpen(true);
+                                handleClose();
+                            }}
+                            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-black text-xs font-bold uppercase tracking-wider shadow-lg hover:from-amber-300 hover:to-orange-400 transition-all"
+                        >
+                            Export & Backup Shelf (.md / .json)
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
