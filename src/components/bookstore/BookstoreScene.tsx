@@ -8,6 +8,7 @@ import { applyAtmosphere } from './AtmospherePresets';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import BookstoreMiniMap from './BookstoreMiniMap';
 import { BookshelfObstacle } from './BookshelfGeometry';
+import { CafeBaristaResult, createCafeBarista } from './CafeBarista3D';
 import { CharacterController } from './CharacterController';
 import { DynamicBooksManager } from './DynamicBooksManager';
 import { createElevator, ElevatorResult } from './ElevatorTransit';
@@ -32,6 +33,7 @@ export default function BookstoreScene() {
     const elevatorRef = useRef<ElevatorResult | null>(null);
     const gachaponRef = useRef<GachaponMachineResult | null>(null);
     const personalShelfRef = useRef<PersonalShelfResult | null>(null);
+    const cafeBaristaRef = useRef<CafeBaristaResult | null>(null);
     const jukeboxRef = useRef<JukeboxResult | null>(null);
     const envLightsRef = useRef<THREE.Light[]>([]);
     const animationFrameRef = useRef<number | null>(null);
@@ -55,6 +57,8 @@ export default function BookstoreScene() {
         isAudioPlaying,
         isFirstPerson,
         atmospherePreset,
+        setCafeOpen,
+        setSittingCinema,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -87,8 +91,15 @@ export default function BookstoreScene() {
             toggleAudio();
         } else if (target.type === 'personalshelf') {
             setBookmarksOpen(true);
+        } else if (target.type === 'cafe') {
+            setCafeOpen(true);
+        } else if (target.type === 'seat' && target.seatPos) {
+            setSittingCinema(true);
+            if (characterRef.current) {
+                characterRef.current.teleport(new THREE.Vector3(target.seatPos[0], 0, target.seatPos[2]));
+            }
         }
-    }, [setInspectedMedia, rollGachapon, toggleAudio, setBookmarksOpen]);
+    }, [setInspectedMedia, rollGachapon, toggleAudio, setBookmarksOpen, setCafeOpen, setSittingCinema]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
         if (characterRef.current) {
@@ -151,6 +162,10 @@ export default function BookstoreScene() {
         scene.add(personalShelf.group);
         personalShelfRef.current = personalShelf;
 
+        const cafeBarista = createCafeBarista([18, 0, 8]);
+        scene.add(cafeBarista.group);
+        cafeBaristaRef.current = cafeBarista;
+
         const animeLayout = createAnimeFloorLayout();
         animeLayoutRef.current = animeLayout;
         animeLayout.group.visible = false;
@@ -173,6 +188,7 @@ export default function BookstoreScene() {
             elevator.obstacle,
             gachapon.obstacle,
             personalShelf.obstacle,
+            cafeBarista.obstacle,
             ...mangaLayout.obstacles,
         ];
         const spawnPos = new THREE.Vector3(0, 0, 14);
@@ -235,6 +251,14 @@ export default function BookstoreScene() {
                     if (intersects.length > 0) {
                         gachaponRef.current.playSpinAnimation();
                         rollGachapon();
+                        return;
+                    }
+                }
+
+                if (cafeBaristaRef.current) {
+                    const intersects = raycaster.intersectObjects(cafeBaristaRef.current.group.children, true);
+                    if (intersects.length > 0) {
+                        setCafeOpen(true);
                         return;
                     }
                 }
@@ -301,6 +325,10 @@ export default function BookstoreScene() {
                     gachaponRef.current.update(delta);
                 }
 
+                if (cafeBaristaRef.current) {
+                    cafeBaristaRef.current.update(delta);
+                }
+
                 if (jukeboxRef.current) {
                     jukeboxRef.current.update(delta, currentIsAudio);
                 }
@@ -329,7 +357,7 @@ export default function BookstoreScene() {
                 renderer.dispose();
             }
         };
-    }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio]);
+    }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio, setCafeOpen]);
 
     useEffect(() => {
         if (!cameraControllerRef.current || !characterRef.current) return;
@@ -376,6 +404,7 @@ export default function BookstoreScene() {
         booksManagerRef.current.group.visible = currentFloor === 1;
         if (gachaponRef.current) gachaponRef.current.group.visible = currentFloor === 1;
         if (personalShelfRef.current) personalShelfRef.current.group.visible = currentFloor === 1;
+        if (cafeBaristaRef.current) cafeBaristaRef.current.group.visible = currentFloor === 1;
 
         animeLayoutRef.current.group.visible = currentFloor === 2;
         if (jukeboxRef.current) jukeboxRef.current.group.visible = currentFloor === 2;
@@ -393,6 +422,7 @@ export default function BookstoreScene() {
                 elevatorRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
                 personalShelfRef.current?.obstacle,
+                cafeBaristaRef.current?.obstacle,
                 ...mangaLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);

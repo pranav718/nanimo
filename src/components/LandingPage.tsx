@@ -7,6 +7,7 @@ import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
 import BookstoreHUD from './bookstore/BookstoreHUD';
+import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import GachaponModal from './bookstore/GachaponModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
@@ -34,6 +35,7 @@ export default function LandingPage() {
             <BookmarksDrawer />
             <GachaponModal />
             <MangaReaderModal />
+            <CafeSommelierModal />
             <AmbientAudioPlayer />
         </main>
     );
