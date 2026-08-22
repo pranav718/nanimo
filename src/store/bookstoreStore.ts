@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -55,6 +55,12 @@ interface BookstoreStore {
     isSynthOpen: boolean;
     isSketchpadOpen: boolean;
     isPetSelectorOpen: boolean;
+    isRadioOpen: boolean;
+    activeRadioStation: number;
+    isReadingGoalOpen: boolean;
+    readingGoalChapters: number;
+    readingChaptersCompleted: number;
+    readingStreakDays: number;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -89,6 +95,11 @@ interface BookstoreStore {
     setSynthOpen: (open: boolean) => void;
     setSketchpadOpen: (open: boolean) => void;
     setPetSelectorOpen: (open: boolean) => void;
+    setRadioOpen: (open: boolean) => void;
+    setActiveRadioStation: (idx: number) => void;
+    setReadingGoalOpen: (open: boolean) => void;
+    setReadingGoalChapters: (count: number) => void;
+    setReadingChaptersCompleted: (count: number) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -122,6 +133,16 @@ const getInitialSavedMedia = (): AnimeMedia[] => {
         return item ? JSON.parse(item) : [];
     } catch {
         return [];
+    }
+};
+
+const getInitialChaptersRead = (): number => {
+    if (typeof window === 'undefined') return 3;
+    try {
+        const item = localStorage.getItem('nanimo_chapters_read');
+        return item ? parseInt(item, 10) : 3;
+    } catch {
+        return 3;
     }
 };
 
@@ -160,6 +181,12 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isSynthOpen: false,
     isSketchpadOpen: false,
     isPetSelectorOpen: false,
+    isRadioOpen: false,
+    activeRadioStation: 0,
+    isReadingGoalOpen: false,
+    readingGoalChapters: 10,
+    readingChaptersCompleted: getInitialChaptersRead(),
+    readingStreakDays: 4,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -267,6 +294,31 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setPetSelectorOpen: (open: boolean) => {
         set({ isPetSelectorOpen: open });
+    },
+
+    setRadioOpen: (open: boolean) => {
+        set({ isRadioOpen: open });
+    },
+
+    setActiveRadioStation: (idx: number) => {
+        set({ activeRadioStation: idx });
+    },
+
+    setReadingGoalOpen: (open: boolean) => {
+        set({ isReadingGoalOpen: open });
+    },
+
+    setReadingGoalChapters: (count: number) => {
+        set({ readingGoalChapters: count });
+    },
+
+    setReadingChaptersCompleted: (count: number) => {
+        set({ readingChaptersCompleted: count });
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.setItem('nanimo_chapters_read', count.toString());
+            } catch {}
+        }
     },
 
     setActivePet: (pet: PetCompanionType) => {
