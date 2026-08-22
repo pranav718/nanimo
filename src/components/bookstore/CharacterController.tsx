@@ -297,6 +297,16 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const sketchpadPos = new THREE.Vector3(-18, 0, -14);
+            if (this.position.distanceTo(sketchpadPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'sketchpad',
+                    id: 'sketchpad-1',
+                    name: 'Manga Artist Drafting Desk',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {
@@ -338,6 +348,16 @@ export class CharacterController {
                     type: 'quiz',
                     id: 'quiz-1',
                     name: 'Anime Soul Personality Quiz',
+                });
+                return;
+            }
+
+            const pondPos = new THREE.Vector3(-12, 0, 10);
+            if (this.position.distanceTo(pondPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'pond',
+                    id: 'pond-1',
+                    name: 'Rooftop Zen Koi Pond',
                 });
                 return;
             }
