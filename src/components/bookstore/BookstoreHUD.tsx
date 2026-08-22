@@ -26,6 +26,7 @@ export default function BookstoreHUD() {
         isPhotoMode,
         setPhotoMode,
         setEmoteWheelOpen,
+        setPassportOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -45,24 +46,40 @@ export default function BookstoreHUD() {
         setAtmospherePreset(next[atmospherePreset] || 'midnight');
     };
 
-    const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-        if (e.key === 'm' || e.key === 'M') {
-            setFastTravelOpen(true);
-        } else if (e.key === 'c' || e.key === 'C') {
-            setWardrobeOpen(true);
-        } else if (e.key === 'b' || e.key === 'B') {
-            setBookmarksOpen(true);
-        } else if (e.key === 'x' || e.key === 'X') {
-            setEmoteWheelOpen(true);
-        } else if (e.key === 'v' || e.key === 'V') {
-            toggleFirstPerson();
-        } else if (e.key === 'p' || e.key === 'P') {
-            setPhotoMode(!isPhotoMode);
-        } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
-            setHelpOpen(!isHelpOpen);
-        }
-    }, [setFastTravelOpen, setWardrobeOpen, setBookmarksOpen, setEmoteWheelOpen, toggleFirstPerson, setPhotoMode, isPhotoMode, setHelpOpen, isHelpOpen]);
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+            if (e.key === 'm' || e.key === 'M') {
+                setFastTravelOpen(true);
+            } else if (e.key === 'c' || e.key === 'C') {
+                setWardrobeOpen(true);
+            } else if (e.key === 'b' || e.key === 'B') {
+                setBookmarksOpen(true);
+            } else if (e.key === 'n' || e.key === 'N') {
+                setPassportOpen(true);
+            } else if (e.key === 'x' || e.key === 'X') {
+                setEmoteWheelOpen(true);
+            } else if (e.key === 'v' || e.key === 'V') {
+                toggleFirstPerson();
+            } else if (e.key === 'p' || e.key === 'P') {
+                setPhotoMode(!isPhotoMode);
+            } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
+                setHelpOpen(!isHelpOpen);
+            }
+        },
+        [
+            setFastTravelOpen,
+            setWardrobeOpen,
+            setBookmarksOpen,
+            setPassportOpen,
+            setEmoteWheelOpen,
+            toggleFirstPerson,
+            setPhotoMode,
+            isPhotoMode,
+            setHelpOpen,
+            isHelpOpen,
+        ]
+    );
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyDown);
@@ -133,6 +150,14 @@ export default function BookstoreHUD() {
                         >
                             <span>Photo</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">P</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setPassportOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Passport</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">N</kbd>
                         </button>
 
                         <button
@@ -227,6 +252,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'terminal'
+                                    ? 'Open Floor Directory & Fast Travel'
+                                    : proximityTarget.type === 'soundboard'
+                                    ? 'Open Anime SFX Synthesizer Console'
                                     : proximityTarget.type === 'gachapon'
                                     ? 'Turn Gachapon Machine Crank'
                                     : proximityTarget.type === 'jukebox'
@@ -251,11 +280,11 @@ export default function BookstoreHUD() {
                         <span>•</span>
                         <span>X for Emotes</span>
                         <span>•</span>
+                        <span>N for Passport</span>
+                        <span>•</span>
                         <span>P for Photo Studio</span>
                         <span>•</span>
                         <span>V for 1st/3rd Person</span>
-                        <span>•</span>
-                        <span>B for Saved Shelf</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -292,6 +321,10 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Jump</span>
                                 <span className="font-mono text-amber-300">Spacebar</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Exploration Passport</span>
+                                <span className="font-mono text-amber-300">N</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Avatar Emotes & Gestures</span>

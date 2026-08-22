@@ -308,6 +308,16 @@ export class CharacterController {
                 return;
             }
 
+            const soundboardPos = new THREE.Vector3(18, 0, -10);
+            if (this.position.distanceTo(soundboardPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'soundboard',
+                    id: 'soundboard-1',
+                    name: 'Anime SFX Synthesizer Console',
+                });
+                return;
+            }
+
             const seats: [number, number, number][] = [[-5.5, 0, -7], [5.5, 0, -7], [0, 0, -3]];
             for (const s of seats) {
                 const sVec = new THREE.Vector3(...s);

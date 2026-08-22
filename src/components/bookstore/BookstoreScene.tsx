@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { AmbientParticlesResult, createAmbientParticles } from './AmbientParticles3D';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
 import { createQuizKiosk, QuizKioskResult } from './AnimeQuizKiosk3D';
+import { createAnimeSoundboard, SoundboardResult } from './AnimeSoundboard3D';
 import { applyAtmosphere } from './AtmospherePresets';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import BookstoreMiniMap from './BookstoreMiniMap';
@@ -35,6 +36,7 @@ export default function BookstoreScene() {
     const rooftopLayoutRef = useRef<RooftopLayoutResult | null>(null);
     const quizKioskRef = useRef<QuizKioskResult | null>(null);
     const directoryTerminalRef = useRef<DirectoryTerminalResult | null>(null);
+    const soundboardRef = useRef<SoundboardResult | null>(null);
     const ambientParticlesRef = useRef<AmbientParticlesResult | null>(null);
     const elevatorRef = useRef<ElevatorResult | null>(null);
     const gachaponRef = useRef<GachaponMachineResult | null>(null);
@@ -68,6 +70,7 @@ export default function BookstoreScene() {
         setSittingCinema,
         setQuizOpen,
         setFastTravelOpen,
+        setSoundboardOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -95,6 +98,8 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'soundboard') {
+            setSoundboardOpen(true);
         } else if (target.type === 'gachapon') {
             gachaponRef.current?.playSpinAnimation();
             rollGachapon();
@@ -112,7 +117,7 @@ export default function BookstoreScene() {
                 characterRef.current.teleport(new THREE.Vector3(target.seatPos[0], 0, target.seatPos[2]));
             }
         }
-    }, [setInspectedMedia, rollGachapon, toggleAudio, setBookmarksOpen, setCafeOpen, setSittingCinema, setQuizOpen, setFastTravelOpen]);
+    }, [setInspectedMedia, rollGachapon, toggleAudio, setBookmarksOpen, setCafeOpen, setSittingCinema, setQuizOpen, setFastTravelOpen, setSoundboardOpen]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
         if (characterRef.current) {
@@ -196,6 +201,11 @@ export default function BookstoreScene() {
         const jukebox = createJukebox([-18, 0, -10]);
         scene.add(jukebox.group);
         jukeboxRef.current = jukebox;
+
+        const soundboard = createAnimeSoundboard([18, 0, -10]);
+        soundboard.group.visible = false;
+        scene.add(soundboard.group);
+        soundboardRef.current = soundboard;
 
         const rooftopLayout = createRooftopFloorLayout();
         rooftopLayoutRef.current = rooftopLayout;
@@ -307,6 +317,14 @@ export default function BookstoreScene() {
                     }
                 }
 
+                if (soundboardRef.current) {
+                    const intersects = raycaster.intersectObjects(soundboardRef.current.group.children, true);
+                    if (intersects.length > 0) {
+                        setSoundboardOpen(true);
+                        return;
+                    }
+                }
+
                 if (animeLayoutRef.current) {
                     const intersects = raycaster.intersectObjects(animeLayoutRef.current.group.children, true);
                     if (intersects.length > 0) {
@@ -377,6 +395,10 @@ export default function BookstoreScene() {
                     directoryTerminalRef.current.update(delta);
                 }
 
+                if (soundboardRef.current && soundboardRef.current.group.visible) {
+                    soundboardRef.current.update(delta);
+                }
+
                 if (gachaponRef.current) {
                     gachaponRef.current.update(delta);
                 }
@@ -417,7 +439,7 @@ export default function BookstoreScene() {
                 renderer.dispose();
             }
         };
-    }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio, setCafeOpen, setQuizOpen, setFastTravelOpen]);
+    }, [handleInteract, setInspectedMedia, currentFloor, rollGachapon, toggleAudio, setCafeOpen, setQuizOpen, setFastTravelOpen, setSoundboardOpen]);
 
     useEffect(() => {
         if (!cameraControllerRef.current || !characterRef.current) return;
@@ -474,6 +496,7 @@ export default function BookstoreScene() {
 
         animeLayoutRef.current.group.visible = currentFloor === 2;
         if (jukeboxRef.current) jukeboxRef.current.group.visible = currentFloor === 2;
+        if (soundboardRef.current) soundboardRef.current.group.visible = currentFloor === 2;
 
         rooftopLayoutRef.current.group.visible = currentFloor === 3;
         if (quizKioskRef.current) quizKioskRef.current.group.visible = currentFloor === 3;
@@ -503,6 +526,7 @@ export default function BookstoreScene() {
                 elevatorRef.current?.obstacle,
                 terminalObstacle,
                 jukeboxRef.current?.obstacle,
+                soundboardRef.current?.obstacle,
                 ...animeLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);

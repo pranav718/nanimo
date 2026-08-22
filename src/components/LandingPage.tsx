@@ -4,10 +4,12 @@ import dynamic from 'next/dynamic';
 import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
 import AnimeQuizModal from './bookstore/AnimeQuizModal';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
+import AnimeSoundboardModal from './bookstore/AnimeSoundboardModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
 import BookstoreHUD from './bookstore/BookstoreHUD';
+import BookstorePassportModal from './bookstore/BookstorePassportModal';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
@@ -44,6 +46,8 @@ export default function LandingPage() {
             <PhotoModeModal />
             <EmoteRadialWheel />
             <ShelfExportModal />
+            <AnimeSoundboardModal />
+            <BookstorePassportModal />
             <AmbientAudioPlayer />
         </main>
     );
