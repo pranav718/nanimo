@@ -5,6 +5,7 @@ import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
 import AnimeQuizModal from './bookstore/AnimeQuizModal';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
 import AnimeSoundboardModal from './bookstore/AnimeSoundboardModal';
+import AnimeSynthesizerModal from './bookstore/AnimeSynthesizerModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
@@ -14,6 +15,8 @@ import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
+import MangaSketchpadModal from './bookstore/MangaSketchpadModal';
+import PetSelectorModal from './bookstore/PetSelectorModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
@@ -48,6 +51,9 @@ export default function LandingPage() {
             <ShelfExportModal />
             <AnimeSoundboardModal />
             <BookstorePassportModal />
+            <AnimeSynthesizerModal />
+            <MangaSketchpadModal />
+            <PetSelectorModal />
             <AmbientAudioPlayer />
         </main>
     );
