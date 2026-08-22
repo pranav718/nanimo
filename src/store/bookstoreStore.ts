@@ -1,6 +1,7 @@
 import { fetchAllBookstoreGenres, fetchTrendingMedia } from '@/lib/anilist';
 import { AtmospherePreset } from '@/components/bookstore/AtmospherePresets';
 import { AvatarEmote } from '@/components/bookstore/CharacterAvatar';
+import { PetCompanionType } from '@/components/bookstore/AvatarPetCompanion3D';
 import { AnimeMedia, BookstoreGenre, FloorLevel } from '@/types';
 import { create } from 'zustand';
 
@@ -11,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -51,6 +52,10 @@ interface BookstoreStore {
     isExportOpen: boolean;
     isSoundboardOpen: boolean;
     isPassportOpen: boolean;
+    isSynthOpen: boolean;
+    isSketchpadOpen: boolean;
+    isPetSelectorOpen: boolean;
+    activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
     isFirstPerson: boolean;
@@ -81,6 +86,10 @@ interface BookstoreStore {
     setExportOpen: (open: boolean) => void;
     setSoundboardOpen: (open: boolean) => void;
     setPassportOpen: (open: boolean) => void;
+    setSynthOpen: (open: boolean) => void;
+    setSketchpadOpen: (open: boolean) => void;
+    setPetSelectorOpen: (open: boolean) => void;
+    setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
     toggleFirstPerson: () => void;
@@ -148,6 +157,10 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isExportOpen: false,
     isSoundboardOpen: false,
     isPassportOpen: false,
+    isSynthOpen: false,
+    isSketchpadOpen: false,
+    isPetSelectorOpen: false,
+    activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
     isFirstPerson: false,
@@ -242,6 +255,22 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setPassportOpen: (open: boolean) => {
         set({ isPassportOpen: open });
+    },
+
+    setSynthOpen: (open: boolean) => {
+        set({ isSynthOpen: open });
+    },
+
+    setSketchpadOpen: (open: boolean) => {
+        set({ isSketchpadOpen: open });
+    },
+
+    setPetSelectorOpen: (open: boolean) => {
+        set({ isPetSelectorOpen: open });
+    },
+
+    setActivePet: (pet: PetCompanionType) => {
+        set({ activePet: pet });
     },
 
     playEmote: (emote: AvatarEmote) => {
