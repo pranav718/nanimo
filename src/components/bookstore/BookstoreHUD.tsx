@@ -27,6 +27,9 @@ export default function BookstoreHUD() {
         setPhotoMode,
         setEmoteWheelOpen,
         setPassportOpen,
+        setSynthOpen,
+        setSketchpadOpen,
+        setPetSelectorOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -59,6 +62,12 @@ export default function BookstoreHUD() {
                 setPassportOpen(true);
             } else if (e.key === 'x' || e.key === 'X') {
                 setEmoteWheelOpen(true);
+            } else if (e.key === 'k' || e.key === 'K') {
+                setSynthOpen(true);
+            } else if (e.key === 'j' || e.key === 'J') {
+                setSketchpadOpen(true);
+            } else if (e.key === 'o' || e.key === 'O') {
+                setPetSelectorOpen(true);
             } else if (e.key === 'v' || e.key === 'V') {
                 toggleFirstPerson();
             } else if (e.key === 'p' || e.key === 'P') {
@@ -73,6 +82,9 @@ export default function BookstoreHUD() {
             setBookmarksOpen,
             setPassportOpen,
             setEmoteWheelOpen,
+            setSynthOpen,
+            setSketchpadOpen,
+            setPetSelectorOpen,
             toggleFirstPerson,
             setPhotoMode,
             isPhotoMode,
@@ -135,13 +147,37 @@ export default function BookstoreHUD() {
                         </p>
                     </div>
 
-                    <div className="pointer-events-auto flex items-center gap-2 mr-40">
+                    <div className="pointer-events-auto flex items-center gap-2 mr-40 flex-wrap justify-end">
                         <button
                             onClick={() => setSearchOpen(true)}
                             className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setSketchpadOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Sketch</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">J</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setSynthOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Synth</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setPetSelectorOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Pet</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">O</kbd>
                         </button>
 
                         <button
@@ -252,6 +288,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'sketchpad'
+                                    ? 'Open Manga Artist Sketchpad'
+                                    : proximityTarget.type === 'pond'
+                                    ? 'Feed Zen Pond Koi Fish'
                                     : proximityTarget.type === 'terminal'
                                     ? 'Open Floor Directory & Fast Travel'
                                     : proximityTarget.type === 'soundboard'
@@ -278,13 +318,15 @@ export default function BookstoreHUD() {
                         <span>•</span>
                         <span>Space to Jump</span>
                         <span>•</span>
+                        <span>J for Sketch</span>
+                        <span>•</span>
+                        <span>K for Synth</span>
+                        <span>•</span>
+                        <span>O for Pet</span>
+                        <span>•</span>
                         <span>X for Emotes</span>
                         <span>•</span>
                         <span>N for Passport</span>
-                        <span>•</span>
-                        <span>P for Photo Studio</span>
-                        <span>•</span>
-                        <span>V for 1st/3rd Person</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -315,12 +357,16 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Sprint / Run</span>
-                                <span className="font-mono text-amber-300">Shift</span>
+                                <span className="text-white/80 font-medium">Manga Artist Sketchpad</span>
+                                <span className="font-mono text-amber-300">J</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Jump</span>
-                                <span className="font-mono text-amber-300">Spacebar</span>
+                                <span className="text-white/80 font-medium">Melody Synthesizer</span>
+                                <span className="font-mono text-amber-300">K</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Anime Pet Familiar</span>
+                                <span className="font-mono text-amber-300">O</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Exploration Passport</span>
@@ -345,18 +391,6 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">My Saved Shelf</span>
                                 <span className="font-mono text-amber-300">B</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Avatar Wardrobe</span>
-                                <span className="font-mono text-amber-300">C</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Instant Search</span>
-                                <span className="font-mono text-amber-300">⌘K / /</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Fast Travel Directory</span>
-                                <span className="font-mono text-amber-300">M</span>
                             </div>
                         </div>
 
