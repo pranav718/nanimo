@@ -14,10 +14,12 @@ import BookstorePassportModal from './bookstore/BookstorePassportModal';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
+import LofiRadioModal from './bookstore/LofiRadioModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
 import MangaSketchpadModal from './bookstore/MangaSketchpadModal';
 import PetSelectorModal from './bookstore/PetSelectorModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
+import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
 
@@ -54,6 +56,8 @@ export default function LandingPage() {
             <AnimeSynthesizerModal />
             <MangaSketchpadModal />
             <PetSelectorModal />
+            <LofiRadioModal />
+            <ReadingGoalModal />
             <AmbientAudioPlayer />
         </main>
     );
