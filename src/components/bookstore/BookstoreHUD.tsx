@@ -30,6 +30,8 @@ export default function BookstoreHUD() {
         setSynthOpen,
         setSketchpadOpen,
         setPetSelectorOpen,
+        setRadioOpen,
+        setReadingGoalOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -60,6 +62,10 @@ export default function BookstoreHUD() {
                 setBookmarksOpen(true);
             } else if (e.key === 'n' || e.key === 'N') {
                 setPassportOpen(true);
+            } else if (e.key === 'r' || e.key === 'R') {
+                setRadioOpen(true);
+            } else if (e.key === 'g' || e.key === 'G') {
+                setReadingGoalOpen(true);
             } else if (e.key === 'x' || e.key === 'X') {
                 setEmoteWheelOpen(true);
             } else if (e.key === 'k' || e.key === 'K') {
@@ -81,6 +87,8 @@ export default function BookstoreHUD() {
             setWardrobeOpen,
             setBookmarksOpen,
             setPassportOpen,
+            setRadioOpen,
+            setReadingGoalOpen,
             setEmoteWheelOpen,
             setSynthOpen,
             setSketchpadOpen,
@@ -154,6 +162,22 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setRadioOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Radio</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">R</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setReadingGoalOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Goal</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">G</kbd>
                         </button>
 
                         <button
@@ -288,6 +312,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'radio'
+                                    ? 'Tune Vintage Lo-Fi Radio Tower'
+                                    : proximityTarget.type === 'nook'
+                                    ? 'Sit in Reading Nook Beanbag'
                                     : proximityTarget.type === 'sketchpad'
                                     ? 'Open Manga Artist Sketchpad'
                                     : proximityTarget.type === 'pond'
@@ -314,17 +342,15 @@ export default function BookstoreHUD() {
                     <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-1.5 backdrop-blur-md">
                         <span>WASD to Move</span>
                         <span>•</span>
-                        <span>Shift to Sprint</span>
+                        <span>R for Radio</span>
                         <span>•</span>
-                        <span>Space to Jump</span>
+                        <span>G for Goal</span>
                         <span>•</span>
                         <span>J for Sketch</span>
                         <span>•</span>
                         <span>K for Synth</span>
                         <span>•</span>
                         <span>O for Pet</span>
-                        <span>•</span>
-                        <span>X for Emotes</span>
                         <span>•</span>
                         <span>N for Passport</span>
                     </div>
@@ -357,6 +383,14 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Lo-Fi Radio Station</span>
+                                <span className="font-mono text-amber-300">R</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Reading Goal Tracker</span>
+                                <span className="font-mono text-amber-300">G</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Manga Artist Sketchpad</span>
                                 <span className="font-mono text-amber-300">J</span>
                             </div>
@@ -387,10 +421,6 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Inspect / Interact</span>
                                 <span className="font-mono text-amber-300">E / Left Click</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">My Saved Shelf</span>
-                                <span className="font-mono text-amber-300">B</span>
                             </div>
                         </div>
 

@@ -307,6 +307,16 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const nookPos = new THREE.Vector3(18, 0, -14);
+            if (this.position.distanceTo(nookPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'nook',
+                    id: 'nook-1',
+                    name: 'Cozy Reading Nook Beanbag',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {
@@ -314,6 +324,16 @@ export class CharacterController {
                     type: 'jukebox',
                     id: 'jukebox-1',
                     name: 'Anime Lo-Fi Jukebox',
+                });
+                return;
+            }
+
+            const radioPos = new THREE.Vector3(-18, 0, 8);
+            if (this.position.distanceTo(radioPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'radio',
+                    id: 'radio-1',
+                    name: 'Vintage Lo-Fi Radio Tower',
                 });
                 return;
             }
