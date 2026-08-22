@@ -4,11 +4,13 @@ import { useBookstoreStore } from '@/store/bookstoreStore';
 import { useEffect, useRef } from 'react';
 
 export default function AmbientAudioPlayer() {
-    const { isAudioPlaying, currentFloor } = useBookstoreStore();
+    const { isAudioPlaying, currentFloor, playerPosition } = useBookstoreStore();
     const audioCtxRef = useRef<AudioContext | null>(null);
     const rainNodeRef = useRef<AudioNode | null>(null);
     const chordsIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const lastFloorRef = useRef<number>(currentFloor);
+    const lastPosRef = useRef<[number, number, number]>(playerPosition);
+    const stepTimerRef = useRef<number>(0);
 
     const playFloorChime = (ctx: AudioContext) => {
         const notes = [587.33, 493.88, 392.00, 440.00, 587.33];
@@ -31,6 +33,52 @@ export default function AmbientAudioPlayer() {
             osc.start(now + idx * 0.18);
             osc.stop(now + idx * 0.18 + 0.65);
         });
+    };
+
+    const playFootstep = (ctx: AudioContext, floor: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        const now = ctx.currentTime;
+
+        if (floor === 1) {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(45, now + 0.08);
+
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(450, now);
+
+            gain.gain.setValueAtTime(0.02, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+        } else if (floor === 2) {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(80, now);
+            osc.frequency.exponentialRampToValueAtTime(30, now + 0.06);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(200, now);
+
+            gain.gain.setValueAtTime(0.015, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+        } else {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(320, now);
+            osc.frequency.exponentialRampToValueAtTime(120, now + 0.05);
+
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(800, now);
+
+            gain.gain.setValueAtTime(0.012, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+        }
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.09);
     };
 
     useEffect(() => {
@@ -140,6 +188,23 @@ export default function AmbientAudioPlayer() {
             }
         }
     }, [currentFloor, isAudioPlaying]);
+
+    useEffect(() => {
+        if (!isAudioPlaying || !audioCtxRef.current || audioCtxRef.current.state !== 'running') return;
+
+        const dx = playerPosition[0] - lastPosRef.current[0];
+        const dz = playerPosition[2] - lastPosRef.current[2];
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        lastPosRef.current = playerPosition;
+
+        if (dist > 0.08) {
+            const now = performance.now();
+            if (now - stepTimerRef.current > 280) {
+                stepTimerRef.current = now;
+                playFootstep(audioCtxRef.current, currentFloor);
+            }
+        }
+    }, [playerPosition, isAudioPlaying, currentFloor]);
 
     return null;
 }
