@@ -11,7 +11,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -27,6 +27,10 @@ interface BookstoreStore {
     trendingAnime: AnimeMedia[];
     trendingManga: AnimeMedia[];
     savedMedia: AnimeMedia[];
+    visitedFloors: number[];
+    hasRolledGachapon: boolean;
+    hasOrderedCafe: boolean;
+    hasTakenQuiz: boolean;
     isLoading: boolean;
     error: string | null;
     inspectedMedia: AnimeMedia | null;
@@ -45,6 +49,8 @@ interface BookstoreStore {
     isQuizOpen: boolean;
     isEmoteWheelOpen: boolean;
     isExportOpen: boolean;
+    isSoundboardOpen: boolean;
+    isPassportOpen: boolean;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
     isFirstPerson: boolean;
@@ -73,6 +79,8 @@ interface BookstoreStore {
     setQuizOpen: (open: boolean) => void;
     setEmoteWheelOpen: (open: boolean) => void;
     setExportOpen: (open: boolean) => void;
+    setSoundboardOpen: (open: boolean) => void;
+    setPassportOpen: (open: boolean) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
     toggleFirstPerson: () => void;
@@ -116,6 +124,10 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     trendingAnime: [],
     trendingManga: [],
     savedMedia: getInitialSavedMedia(),
+    visitedFloors: [1],
+    hasRolledGachapon: false,
+    hasOrderedCafe: false,
+    hasTakenQuiz: false,
     isLoading: false,
     error: null,
     inspectedMedia: null,
@@ -134,6 +146,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isQuizOpen: false,
     isEmoteWheelOpen: false,
     isExportOpen: false,
+    isSoundboardOpen: false,
+    isPassportOpen: false,
     activeEmote: null,
     readingMedia: null,
     isFirstPerson: false,
@@ -149,7 +163,9 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     },
 
     setCurrentFloor: (floor: FloorLevel) => {
-        set({ currentFloor: floor, isSittingCinema: false });
+        const { visitedFloors } = get();
+        const updated = visitedFloors.includes(floor) ? visitedFloors : [...visitedFloors, floor];
+        set({ currentFloor: floor, isSittingCinema: false, visitedFloors: updated });
     },
 
     setActiveGenre: (genre: BookstoreGenre | null) => {
@@ -197,7 +213,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     },
 
     setCafeOpen: (open: boolean) => {
-        set({ isCafeOpen: open });
+        set({ isCafeOpen: open, hasOrderedCafe: open ? true : get().hasOrderedCafe });
     },
 
     setSittingCinema: (sitting: boolean) => {
@@ -209,7 +225,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     },
 
     setQuizOpen: (open: boolean) => {
-        set({ isQuizOpen: open });
+        set({ isQuizOpen: open, hasTakenQuiz: open ? true : get().hasTakenQuiz });
     },
 
     setEmoteWheelOpen: (open: boolean) => {
@@ -218,6 +234,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setExportOpen: (open: boolean) => {
         set({ isExportOpen: open });
+    },
+
+    setSoundboardOpen: (open: boolean) => {
+        set({ isSoundboardOpen: open });
+    },
+
+    setPassportOpen: (open: boolean) => {
+        set({ isPassportOpen: open });
     },
 
     playEmote: (emote: AvatarEmote) => {
@@ -286,7 +310,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
         if (all.length === 0) return null;
         const randomItem = all[Math.floor(Math.random() * all.length)];
-        set({ gachaponResult: randomItem, isGachaponOpen: true });
+        set({ gachaponResult: randomItem, isGachaponOpen: true, hasRolledGachapon: true });
         return randomItem;
     },
 
