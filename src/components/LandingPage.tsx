@@ -6,12 +6,14 @@ import AnimeQuizModal from './bookstore/AnimeQuizModal';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
 import AnimeSoundboardModal from './bookstore/AnimeSoundboardModal';
 import AnimeSynthesizerModal from './bookstore/AnimeSynthesizerModal';
+import AnimeTriviaArcadeModal from './bookstore/AnimeTriviaArcadeModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
 import BookstoreHUD from './bookstore/BookstoreHUD';
 import BookstorePassportModal from './bookstore/BookstorePassportModal';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
+import CosmicTelescopeModal from './bookstore/CosmicTelescopeModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
 import LofiRadioModal from './bookstore/LofiRadioModal';
@@ -58,6 +60,8 @@ export default function LandingPage() {
             <PetSelectorModal />
             <LofiRadioModal />
             <ReadingGoalModal />
+            <AnimeTriviaArcadeModal />
+            <CosmicTelescopeModal />
             <AmbientAudioPlayer />
         </main>
     );
