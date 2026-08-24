@@ -23,6 +23,8 @@ import { createGachaponMachine, GachaponMachineResult } from './GachaponMachine'
 import { createJukebox, JukeboxResult } from './Jukebox3D';
 import { createMangaDrawingTable, DrawingTableResult } from './MangaDrawingTable3D';
 import { createMangaFloorLayout } from './MangaFloorLayout';
+import { createMatchaTeaCart, TeaCartResult } from './MatchaTeaCart3D';
+import { createOmikujiShrine, ShrineResult } from './OmikujiShrine3D';
 import { createPersonalShelf, PersonalShelfResult } from './PersonalShelf';
 import { createRadioStation, RadioStationResult } from './RadioStation3D';
 import { createReadingNook, ReadingNookResult } from './ReadingNook3D';
@@ -46,6 +48,8 @@ export default function BookstoreScene() {
     const soundboardRef = useRef<SoundboardResult | null>(null);
     const arcadeRef = useRef<ArcadeResult | null>(null);
     const telescopeRef = useRef<TelescopeResult | null>(null);
+    const shrineRef = useRef<ShrineResult | null>(null);
+    const teaCartRef = useRef<TeaCartResult | null>(null);
     const radioStationRef = useRef<RadioStationResult | null>(null);
     const readingNookRef = useRef<ReadingNookResult | null>(null);
     const drawingTableRef = useRef<DrawingTableResult | null>(null);
@@ -91,6 +95,8 @@ export default function BookstoreScene() {
         setReadingGoalOpen,
         setTriviaArcadeOpen,
         setTelescopeOpen,
+        setFortuneOpen,
+        setTeaCartOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -118,6 +124,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'teacart') {
+            setTeaCartOpen(true);
+        } else if (target.type === 'shrine') {
+            setFortuneOpen(true);
         } else if (target.type === 'arcade') {
             setTriviaArcadeOpen(true);
         } else if (target.type === 'telescope') {
@@ -162,6 +172,8 @@ export default function BookstoreScene() {
         setReadingGoalOpen,
         setTriviaArcadeOpen,
         setTelescopeOpen,
+        setFortuneOpen,
+        setTeaCartOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -243,6 +255,10 @@ export default function BookstoreScene() {
         scene.add(cafeBarista.group);
         cafeBaristaRef.current = cafeBarista;
 
+        const teaCart = createMatchaTeaCart([18, 0, -6]);
+        scene.add(teaCart.group);
+        teaCartRef.current = teaCart;
+
         const drawingTable = createMangaDrawingTable([-18, 0, -14]);
         scene.add(drawingTable.group);
         drawingTableRef.current = drawingTable;
@@ -295,6 +311,11 @@ export default function BookstoreScene() {
         scene.add(telescope.group);
         telescopeRef.current = telescope;
 
+        const shrine = createOmikujiShrine([0, 0, 10]);
+        shrine.group.visible = false;
+        scene.add(shrine.group);
+        shrineRef.current = shrine;
+
         const booksManager = new DynamicBooksManager();
         scene.add(booksManager.group);
         booksManagerRef.current = booksManager;
@@ -304,6 +325,7 @@ export default function BookstoreScene() {
             terminal.obstacle,
             drawingTable.obstacle,
             readingNook.obstacle,
+            teaCart.obstacle,
             gachapon.obstacle,
             personalShelf.obstacle,
             cafeBarista.obstacle,
@@ -351,6 +373,17 @@ export default function BookstoreScene() {
             }
 
             if (floor === 1) {
+                if (teaCartRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        teaCartRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setTeaCartOpen(true);
+                        return;
+                    }
+                }
+
                 if (drawingTableRef.current) {
                     const intersects = raycaster.intersectObjects(
                         drawingTableRef.current.group.children,
@@ -479,6 +512,17 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 3) {
+                if (shrineRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        shrineRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setFortuneOpen(true);
+                        return;
+                    }
+                }
+
                 if (telescopeRef.current) {
                     const intersects = raycaster.intersectObjects(
                         telescopeRef.current.group.children,
@@ -566,6 +610,10 @@ export default function BookstoreScene() {
                     readingNookRef.current.update(delta);
                 }
 
+                if (teaCartRef.current && teaCartRef.current.group.visible) {
+                    teaCartRef.current.update(delta);
+                }
+
                 if (radioStationRef.current && radioStationRef.current.group.visible) {
                     radioStationRef.current.update(delta);
                 }
@@ -600,6 +648,10 @@ export default function BookstoreScene() {
 
                 if (telescopeRef.current && telescopeRef.current.group.visible) {
                     telescopeRef.current.update(delta);
+                }
+
+                if (shrineRef.current && shrineRef.current.group.visible) {
+                    shrineRef.current.update(delta);
                 }
 
                 if (rooftopLayoutRef.current && rooftopLayoutRef.current.group.visible) {
@@ -641,6 +693,8 @@ export default function BookstoreScene() {
         setReadingGoalOpen,
         setTriviaArcadeOpen,
         setTelescopeOpen,
+        setFortuneOpen,
+        setTeaCartOpen,
     ]);
 
     useEffect(() => {
@@ -708,6 +762,7 @@ export default function BookstoreScene() {
         if (gachaponRef.current) gachaponRef.current.group.visible = currentFloor === 1;
         if (personalShelfRef.current) personalShelfRef.current.group.visible = currentFloor === 1;
         if (cafeBaristaRef.current) cafeBaristaRef.current.group.visible = currentFloor === 1;
+        if (teaCartRef.current) teaCartRef.current.group.visible = currentFloor === 1;
         if (drawingTableRef.current) drawingTableRef.current.group.visible = currentFloor === 1;
         if (readingNookRef.current) readingNookRef.current.group.visible = currentFloor === 1;
 
@@ -721,6 +776,7 @@ export default function BookstoreScene() {
         if (quizKioskRef.current) quizKioskRef.current.group.visible = currentFloor === 3;
         if (koiPondRef.current) koiPondRef.current.group.visible = currentFloor === 3;
         if (telescopeRef.current) telescopeRef.current.group.visible = currentFloor === 3;
+        if (shrineRef.current) shrineRef.current.group.visible = currentFloor === 3;
 
         if (elevatorRef.current) {
             const floorColor = currentFloor === 1 ? 0x7dd3fc : currentFloor === 2 ? 0xf43f5e : 0xf472b6;
@@ -736,6 +792,7 @@ export default function BookstoreScene() {
                 terminalObstacle,
                 drawingTableRef.current?.obstacle,
                 readingNookRef.current?.obstacle,
+                teaCartRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
                 personalShelfRef.current?.obstacle,
                 cafeBaristaRef.current?.obstacle,
@@ -764,6 +821,7 @@ export default function BookstoreScene() {
                 quizKioskRef.current?.obstacle,
                 koiPondRef.current?.obstacle,
                 telescopeRef.current?.obstacle,
+                shrineRef.current?.obstacle,
                 ...rooftopLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);

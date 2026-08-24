@@ -19,6 +19,8 @@ import GachaponModal from './bookstore/GachaponModal';
 import LofiRadioModal from './bookstore/LofiRadioModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
 import MangaSketchpadModal from './bookstore/MangaSketchpadModal';
+import MatchaTeaCartModal from './bookstore/MatchaTeaCartModal';
+import OmikujiFortuneModal from './bookstore/OmikujiFortuneModal';
 import PetSelectorModal from './bookstore/PetSelectorModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
 import ReadingGoalModal from './bookstore/ReadingGoalModal';
@@ -62,6 +64,8 @@ export default function LandingPage() {
             <ReadingGoalModal />
             <AnimeTriviaArcadeModal />
             <CosmicTelescopeModal />
+            <MatchaTeaCartModal />
+            <OmikujiFortuneModal />
             <AmbientAudioPlayer />
         </main>
     );
