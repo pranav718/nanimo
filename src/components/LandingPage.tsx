@@ -2,11 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
+import AnimePostcardModal from './bookstore/AnimePostcardModal';
 import AnimeQuizModal from './bookstore/AnimeQuizModal';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
 import AnimeSoundboardModal from './bookstore/AnimeSoundboardModal';
 import AnimeSynthesizerModal from './bookstore/AnimeSynthesizerModal';
 import AnimeTriviaArcadeModal from './bookstore/AnimeTriviaArcadeModal';
+import AnimeVinylDJModal from './bookstore/AnimeVinylDJModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
@@ -66,6 +68,8 @@ export default function LandingPage() {
             <CosmicTelescopeModal />
             <MatchaTeaCartModal />
             <OmikujiFortuneModal />
+            <AnimeVinylDJModal />
+            <AnimePostcardModal />
             <AmbientAudioPlayer />
         </main>
     );

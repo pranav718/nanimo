@@ -5,9 +5,11 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { AmbientParticlesResult, createAmbientParticles } from './AmbientParticles3D';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
+import { createAnimePostBox, PostBoxResult } from './AnimePostBox3D';
 import { createQuizKiosk, QuizKioskResult } from './AnimeQuizKiosk3D';
 import { createAnimeSoundboard, SoundboardResult } from './AnimeSoundboard3D';
 import { ArcadeResult, createAnimeTriviaArcade } from './AnimeTriviaArcade3D';
+import { createVinylDJBooth, VinylDJResult } from './AnimeVinylDJ3D';
 import { applyAtmosphere } from './AtmospherePresets';
 import { createPetCompanion, PetCompanionResult } from './AvatarPetCompanion3D';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
@@ -46,6 +48,8 @@ export default function BookstoreScene() {
     const quizKioskRef = useRef<QuizKioskResult | null>(null);
     const directoryTerminalRef = useRef<DirectoryTerminalResult | null>(null);
     const soundboardRef = useRef<SoundboardResult | null>(null);
+    const djBoothRef = useRef<VinylDJResult | null>(null);
+    const postBoxRef = useRef<PostBoxResult | null>(null);
     const arcadeRef = useRef<ArcadeResult | null>(null);
     const telescopeRef = useRef<TelescopeResult | null>(null);
     const shrineRef = useRef<ShrineResult | null>(null);
@@ -97,6 +101,8 @@ export default function BookstoreScene() {
         setTelescopeOpen,
         setFortuneOpen,
         setTeaCartOpen,
+        setDJOpen,
+        setPostcardOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -124,6 +130,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'postbox') {
+            setPostcardOpen(true);
+        } else if (target.type === 'dj') {
+            setDJOpen(true);
         } else if (target.type === 'teacart') {
             setTeaCartOpen(true);
         } else if (target.type === 'shrine') {
@@ -174,6 +184,8 @@ export default function BookstoreScene() {
         setTelescopeOpen,
         setFortuneOpen,
         setTeaCartOpen,
+        setDJOpen,
+        setPostcardOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -259,6 +271,10 @@ export default function BookstoreScene() {
         scene.add(teaCart.group);
         teaCartRef.current = teaCart;
 
+        const postBox = createAnimePostBox([-18, 0, -2]);
+        scene.add(postBox.group);
+        postBoxRef.current = postBox;
+
         const drawingTable = createMangaDrawingTable([-18, 0, -14]);
         scene.add(drawingTable.group);
         drawingTableRef.current = drawingTable;
@@ -285,6 +301,11 @@ export default function BookstoreScene() {
         soundboard.group.visible = false;
         scene.add(soundboard.group);
         soundboardRef.current = soundboard;
+
+        const djBooth = createVinylDJBooth([18, 0, 14]);
+        djBooth.group.visible = false;
+        scene.add(djBooth.group);
+        djBoothRef.current = djBooth;
 
         const arcade = createAnimeTriviaArcade([-18, 0, 14]);
         arcade.group.visible = false;
@@ -326,6 +347,7 @@ export default function BookstoreScene() {
             drawingTable.obstacle,
             readingNook.obstacle,
             teaCart.obstacle,
+            postBox.obstacle,
             gachapon.obstacle,
             personalShelf.obstacle,
             cafeBarista.obstacle,
@@ -373,6 +395,17 @@ export default function BookstoreScene() {
             }
 
             if (floor === 1) {
+                if (postBoxRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        postBoxRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setPostcardOpen(true);
+                        return;
+                    }
+                }
+
                 if (teaCartRef.current) {
                     const intersects = raycaster.intersectObjects(
                         teaCartRef.current.group.children,
@@ -453,6 +486,17 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 2) {
+                if (djBoothRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        djBoothRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setDJOpen(true);
+                        return;
+                    }
+                }
+
                 if (arcadeRef.current) {
                     const intersects = raycaster.intersectObjects(
                         arcadeRef.current.group.children,
@@ -614,12 +658,20 @@ export default function BookstoreScene() {
                     teaCartRef.current.update(delta);
                 }
 
+                if (postBoxRef.current && postBoxRef.current.group.visible) {
+                    postBoxRef.current.update(delta);
+                }
+
                 if (radioStationRef.current && radioStationRef.current.group.visible) {
                     radioStationRef.current.update(delta);
                 }
 
                 if (soundboardRef.current && soundboardRef.current.group.visible) {
                     soundboardRef.current.update(delta);
+                }
+
+                if (djBoothRef.current && djBoothRef.current.group.visible) {
+                    djBoothRef.current.update(delta);
                 }
 
                 if (arcadeRef.current && arcadeRef.current.group.visible) {
@@ -695,6 +747,8 @@ export default function BookstoreScene() {
         setTelescopeOpen,
         setFortuneOpen,
         setTeaCartOpen,
+        setDJOpen,
+        setPostcardOpen,
     ]);
 
     useEffect(() => {
@@ -763,6 +817,7 @@ export default function BookstoreScene() {
         if (personalShelfRef.current) personalShelfRef.current.group.visible = currentFloor === 1;
         if (cafeBaristaRef.current) cafeBaristaRef.current.group.visible = currentFloor === 1;
         if (teaCartRef.current) teaCartRef.current.group.visible = currentFloor === 1;
+        if (postBoxRef.current) postBoxRef.current.group.visible = currentFloor === 1;
         if (drawingTableRef.current) drawingTableRef.current.group.visible = currentFloor === 1;
         if (readingNookRef.current) readingNookRef.current.group.visible = currentFloor === 1;
 
@@ -770,6 +825,7 @@ export default function BookstoreScene() {
         if (jukeboxRef.current) jukeboxRef.current.group.visible = currentFloor === 2;
         if (soundboardRef.current) soundboardRef.current.group.visible = currentFloor === 2;
         if (radioStationRef.current) radioStationRef.current.group.visible = currentFloor === 2;
+        if (djBoothRef.current) djBoothRef.current.group.visible = currentFloor === 2;
         if (arcadeRef.current) arcadeRef.current.group.visible = currentFloor === 2;
 
         rooftopLayoutRef.current.group.visible = currentFloor === 3;
@@ -793,6 +849,7 @@ export default function BookstoreScene() {
                 drawingTableRef.current?.obstacle,
                 readingNookRef.current?.obstacle,
                 teaCartRef.current?.obstacle,
+                postBoxRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
                 personalShelfRef.current?.obstacle,
                 cafeBaristaRef.current?.obstacle,
@@ -808,6 +865,7 @@ export default function BookstoreScene() {
                 jukeboxRef.current?.obstacle,
                 radioStationRef.current?.obstacle,
                 soundboardRef.current?.obstacle,
+                djBoothRef.current?.obstacle,
                 arcadeRef.current?.obstacle,
                 ...animeLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
