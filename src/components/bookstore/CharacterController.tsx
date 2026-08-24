@@ -327,6 +327,16 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const postboxPos = new THREE.Vector3(-18, 0, -2);
+            if (this.position.distanceTo(postboxPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'postbox',
+                    id: 'postbox-1',
+                    name: 'Tokyo Retro Postbox & Stationery',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {
@@ -364,6 +374,16 @@ export class CharacterController {
                     type: 'arcade',
                     id: 'arcade-1',
                     name: 'Anime Trivia Arcade Cabinet',
+                });
+                return;
+            }
+
+            const djPos = new THREE.Vector3(18, 0, 14);
+            if (this.position.distanceTo(djPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'dj',
+                    id: 'dj-1',
+                    name: 'Anime Vinyl DJ Turntable Booth',
                 });
                 return;
             }

@@ -36,6 +36,8 @@ export default function BookstoreHUD() {
         setTelescopeOpen,
         setFortuneOpen,
         setTeaCartOpen,
+        setDJOpen,
+        setPostcardOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -78,6 +80,10 @@ export default function BookstoreHUD() {
                 setFortuneOpen(true);
             } else if (e.key === 'u' || e.key === 'U') {
                 setTeaCartOpen(true);
+            } else if (e.key === 'y' || e.key === 'Y') {
+                setDJOpen(true);
+            } else if (e.key === 'i' || e.key === 'I') {
+                setPostcardOpen(true);
             } else if (e.key === 'x' || e.key === 'X') {
                 setEmoteWheelOpen(true);
             } else if (e.key === 'k' || e.key === 'K') {
@@ -105,6 +111,8 @@ export default function BookstoreHUD() {
             setTelescopeOpen,
             setFortuneOpen,
             setTeaCartOpen,
+            setDJOpen,
+            setPostcardOpen,
             setEmoteWheelOpen,
             setSynthOpen,
             setSketchpadOpen,
@@ -178,6 +186,22 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setDJOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>DJ</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">Y</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setPostcardOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Post</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">I</kbd>
                         </button>
 
                         <button
@@ -360,6 +384,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'dj'
+                                    ? 'Spin Vinyl Record on DJ Turntables'
+                                    : proximityTarget.type === 'postbox'
+                                    ? 'Send Custom Tokyo Anime Postcard'
                                     : proximityTarget.type === 'shrine'
                                     ? 'Draw Omikuji Fortune Scroll'
                                     : proximityTarget.type === 'teacart'
@@ -398,6 +426,10 @@ export default function BookstoreHUD() {
                     <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-1.5 backdrop-blur-md">
                         <span>WASD to Move</span>
                         <span>•</span>
+                        <span>Y for DJ</span>
+                        <span>•</span>
+                        <span>I for Post</span>
+                        <span>•</span>
                         <span>U for Tea</span>
                         <span>•</span>
                         <span>F for Fortune</span>
@@ -405,10 +437,6 @@ export default function BookstoreHUD() {
                         <span>T for Arcade</span>
                         <span>•</span>
                         <span>L for Telescope</span>
-                        <span>•</span>
-                        <span>R for Radio</span>
-                        <span>•</span>
-                        <span>G for Goal</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -439,6 +467,14 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Vinyl DJ Turntable Booth</span>
+                                <span className="font-mono text-amber-300">Y</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Tokyo Postcard Studio</span>
+                                <span className="font-mono text-amber-300">I</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Matcha & Boba Tea Cart</span>
                                 <span className="font-mono text-amber-300">U</span>
                             </div>
@@ -461,18 +497,6 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Reading Goal Tracker</span>
                                 <span className="font-mono text-amber-300">G</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Manga Artist Sketchpad</span>
-                                <span className="font-mono text-amber-300">J</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Melody Synthesizer</span>
-                                <span className="font-mono text-amber-300">K</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Anime Pet Familiar</span>
-                                <span className="font-mono text-amber-300">O</span>
                             </div>
                         </div>
 
