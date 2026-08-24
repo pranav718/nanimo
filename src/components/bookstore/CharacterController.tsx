@@ -317,6 +317,16 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const teacartPos = new THREE.Vector3(18, 0, -6);
+            if (this.position.distanceTo(teacartPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'teacart',
+                    id: 'teacart-1',
+                    name: 'Matcha & Boba Tea Cart',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {
@@ -398,6 +408,16 @@ export class CharacterController {
                     type: 'telescope',
                     id: 'telescope-1',
                     name: 'Cosmic Stargazer Telescope',
+                });
+                return;
+            }
+
+            const shrinePos = new THREE.Vector3(0, 0, 10);
+            if (this.position.distanceTo(shrinePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'shrine',
+                    id: 'shrine-1',
+                    name: 'Omikuji Fortune Shrine',
                 });
                 return;
             }
