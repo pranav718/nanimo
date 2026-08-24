@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -61,6 +61,8 @@ interface BookstoreStore {
     readingGoalChapters: number;
     readingChaptersCompleted: number;
     readingStreakDays: number;
+    isTriviaArcadeOpen: boolean;
+    isTelescopeOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -100,6 +102,8 @@ interface BookstoreStore {
     setReadingGoalOpen: (open: boolean) => void;
     setReadingGoalChapters: (count: number) => void;
     setReadingChaptersCompleted: (count: number) => void;
+    setTriviaArcadeOpen: (open: boolean) => void;
+    setTelescopeOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -187,6 +191,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     readingGoalChapters: 10,
     readingChaptersCompleted: getInitialChaptersRead(),
     readingStreakDays: 4,
+    isTriviaArcadeOpen: false,
+    isTelescopeOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -319,6 +325,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
                 localStorage.setItem('nanimo_chapters_read', count.toString());
             } catch {}
         }
+    },
+
+    setTriviaArcadeOpen: (open: boolean) => {
+        set({ isTriviaArcadeOpen: open });
+    },
+
+    setTelescopeOpen: (open: boolean) => {
+        set({ isTelescopeOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
