@@ -348,6 +348,16 @@ export class CharacterController {
                 return;
             }
 
+            const arcadePos = new THREE.Vector3(-18, 0, 14);
+            if (this.position.distanceTo(arcadePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'arcade',
+                    id: 'arcade-1',
+                    name: 'Anime Trivia Arcade Cabinet',
+                });
+                return;
+            }
+
             const seats: [number, number, number][] = [[-5.5, 0, -7], [5.5, 0, -7], [0, 0, -3]];
             for (const s of seats) {
                 const sVec = new THREE.Vector3(...s);
@@ -378,6 +388,16 @@ export class CharacterController {
                     type: 'pond',
                     id: 'pond-1',
                     name: 'Rooftop Zen Koi Pond',
+                });
+                return;
+            }
+
+            const telescopePos = new THREE.Vector3(12, 0, -10);
+            if (this.position.distanceTo(telescopePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'telescope',
+                    id: 'telescope-1',
+                    name: 'Cosmic Stargazer Telescope',
                 });
                 return;
             }

@@ -32,6 +32,8 @@ export default function BookstoreHUD() {
         setPetSelectorOpen,
         setRadioOpen,
         setReadingGoalOpen,
+        setTriviaArcadeOpen,
+        setTelescopeOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -66,6 +68,10 @@ export default function BookstoreHUD() {
                 setRadioOpen(true);
             } else if (e.key === 'g' || e.key === 'G') {
                 setReadingGoalOpen(true);
+            } else if (e.key === 't' || e.key === 'T') {
+                setTriviaArcadeOpen(true);
+            } else if (e.key === 'l' || e.key === 'L') {
+                setTelescopeOpen(true);
             } else if (e.key === 'x' || e.key === 'X') {
                 setEmoteWheelOpen(true);
             } else if (e.key === 'k' || e.key === 'K') {
@@ -89,6 +95,8 @@ export default function BookstoreHUD() {
             setPassportOpen,
             setRadioOpen,
             setReadingGoalOpen,
+            setTriviaArcadeOpen,
+            setTelescopeOpen,
             setEmoteWheelOpen,
             setSynthOpen,
             setSketchpadOpen,
@@ -162,6 +170,22 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setTriviaArcadeOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Arcade</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">T</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setTelescopeOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Stars</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">L</kbd>
                         </button>
 
                         <button
@@ -312,6 +336,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'arcade'
+                                    ? 'Play Anime Trivia Arcade Cabinet'
+                                    : proximityTarget.type === 'telescope'
+                                    ? 'Gaze Through Cosmic Stargazer Telescope'
                                     : proximityTarget.type === 'radio'
                                     ? 'Tune Vintage Lo-Fi Radio Tower'
                                     : proximityTarget.type === 'nook'
@@ -342,6 +370,10 @@ export default function BookstoreHUD() {
                     <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-1.5 backdrop-blur-md">
                         <span>WASD to Move</span>
                         <span>•</span>
+                        <span>T for Arcade</span>
+                        <span>•</span>
+                        <span>L for Telescope</span>
+                        <span>•</span>
                         <span>R for Radio</span>
                         <span>•</span>
                         <span>G for Goal</span>
@@ -349,10 +381,6 @@ export default function BookstoreHUD() {
                         <span>J for Sketch</span>
                         <span>•</span>
                         <span>K for Synth</span>
-                        <span>•</span>
-                        <span>O for Pet</span>
-                        <span>•</span>
-                        <span>N for Passport</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -383,6 +411,14 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Anime Trivia Arcade</span>
+                                <span className="font-mono text-amber-300">T</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Stargazer Telescope</span>
+                                <span className="font-mono text-amber-300">L</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Lo-Fi Radio Station</span>
                                 <span className="font-mono text-amber-300">R</span>
                             </div>
@@ -409,18 +445,6 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Avatar Emotes & Gestures</span>
                                 <span className="font-mono text-amber-300">X</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Photo Studio Mode</span>
-                                <span className="font-mono text-amber-300">P</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Camera Perspective Toggle</span>
-                                <span className="font-mono text-amber-300">V (1st / 3rd Person)</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Inspect / Interact</span>
-                                <span className="font-mono text-amber-300">E / Left Click</span>
                             </div>
                         </div>
 
