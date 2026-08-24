@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -63,6 +63,8 @@ interface BookstoreStore {
     readingStreakDays: number;
     isTriviaArcadeOpen: boolean;
     isTelescopeOpen: boolean;
+    isFortuneOpen: boolean;
+    isTeaCartOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -104,6 +106,8 @@ interface BookstoreStore {
     setReadingChaptersCompleted: (count: number) => void;
     setTriviaArcadeOpen: (open: boolean) => void;
     setTelescopeOpen: (open: boolean) => void;
+    setFortuneOpen: (open: boolean) => void;
+    setTeaCartOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -193,6 +197,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     readingStreakDays: 4,
     isTriviaArcadeOpen: false,
     isTelescopeOpen: false,
+    isFortuneOpen: false,
+    isTeaCartOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -333,6 +339,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setTelescopeOpen: (open: boolean) => {
         set({ isTelescopeOpen: open });
+    },
+
+    setFortuneOpen: (open: boolean) => {
+        set({ isFortuneOpen: open });
+    },
+
+    setTeaCartOpen: (open: boolean) => {
+        set({ isTeaCartOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
