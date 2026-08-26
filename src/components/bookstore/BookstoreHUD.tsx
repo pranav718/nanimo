@@ -44,6 +44,8 @@ export default function BookstoreHUD() {
         setOrigamiOpen,
         setMetroCardOpen,
         setVendingOpen,
+        setKaraokeOpen,
+        setNeonBoardOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -204,6 +206,20 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setKaraokeOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Karaoke</span>
+                        </button>
+
+                        <button
+                            onClick={() => setNeonBoardOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Neon</span>
                         </button>
 
                         <button
@@ -448,6 +464,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'karaoke'
+                                    ? 'Sing Anime Songs in Karaoke Booth'
+                                    : proximityTarget.type === 'neonboard'
+                                    ? 'Customize Akiba Neon Marquee Sign'
                                     : proximityTarget.type === 'metrogate'
                                     ? 'Tap Tokyo Metro Commuter IC Pass'
                                     : proximityTarget.type === 'vending'
@@ -509,8 +529,6 @@ export default function BookstoreHUD() {
                         <span>Z for Mixer</span>
                         <span>•</span>
                         <span>Q for Relics</span>
-                        <span>•</span>
-                        <span>Y for DJ</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -541,20 +559,20 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Karaoke Lounge</span>
+                                <span className="font-mono text-amber-300">Sing in Booth</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Cyber Neon Billboard</span>
+                                <span className="font-mono text-amber-300">Customize Marquee</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Hanabi Fireworks</span>
                                 <span className="font-mono text-amber-300">H</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Origami Studio</span>
                                 <span className="font-mono text-amber-300">W</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Soundscape Mixer</span>
-                                <span className="font-mono text-amber-300">Z</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Trophy & Relics</span>
-                                <span className="font-mono text-amber-300">Q</span>
                             </div>
                         </div>
 

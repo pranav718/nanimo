@@ -428,6 +428,26 @@ export class CharacterController {
                 return;
             }
 
+            const karaokePos = new THREE.Vector3(18, 0, 8);
+            if (this.position.distanceTo(karaokePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'karaoke',
+                    id: 'karaoke-1',
+                    name: 'Anime Karaoke Rhythm Stage',
+                });
+                return;
+            }
+
+            const neonPos = new THREE.Vector3(0, 0, 16);
+            if (this.position.distanceTo(neonPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'neonboard',
+                    id: 'neonboard-1',
+                    name: 'Akiba Cyber Neon Marquee Sign',
+                });
+                return;
+            }
+
             const seats: [number, number, number][] = [[-5.5, 0, -7], [5.5, 0, -7], [0, 0, -3]];
             for (const s of seats) {
                 const sVec = new THREE.Vector3(...s);
