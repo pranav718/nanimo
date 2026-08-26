@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -71,6 +71,8 @@ interface BookstoreStore {
     isTrophyOpen: boolean;
     isFireworksOpen: boolean;
     isOrigamiOpen: boolean;
+    isMetroCardOpen: boolean;
+    isVendingOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -120,6 +122,8 @@ interface BookstoreStore {
     setTrophyOpen: (open: boolean) => void;
     setFireworksOpen: (open: boolean) => void;
     setOrigamiOpen: (open: boolean) => void;
+    setMetroCardOpen: (open: boolean) => void;
+    setVendingOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -217,6 +221,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isTrophyOpen: false,
     isFireworksOpen: false,
     isOrigamiOpen: false,
+    isMetroCardOpen: false,
+    isVendingOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -389,6 +395,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setOrigamiOpen: (open: boolean) => {
         set({ isOrigamiOpen: open });
+    },
+
+    setMetroCardOpen: (open: boolean) => {
+        set({ isMetroCardOpen: open });
+    },
+
+    setVendingOpen: (open: boolean) => {
+        set({ isVendingOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
