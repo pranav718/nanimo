@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import AmbienceMixerModal from './bookstore/AmbienceMixerModal';
 import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
+import AnimeKaraokeModal from './bookstore/AnimeKaraokeModal';
 import AnimePostcardModal from './bookstore/AnimePostcardModal';
 import AnimeQuizModal from './bookstore/AnimeQuizModal';
 import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
@@ -18,6 +19,7 @@ import BookstoreHUD from './bookstore/BookstoreHUD';
 import BookstorePassportModal from './bookstore/BookstorePassportModal';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import CosmicTelescopeModal from './bookstore/CosmicTelescopeModal';
+import CyberNeonBoardModal from './bookstore/CyberNeonBoardModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import GachaponModal from './bookstore/GachaponModal';
 import LofiRadioModal from './bookstore/LofiRadioModal';
@@ -82,6 +84,8 @@ export default function LandingPage() {
             <OrigamiStudioModal />
             <TokyoMetroCardModal />
             <AnimeVendingMachineModal />
+            <AnimeKaraokeModal />
+            <CyberNeonBoardModal />
             <AmbientAudioPlayer />
         </main>
     );

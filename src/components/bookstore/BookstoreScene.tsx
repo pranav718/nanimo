@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { AmbientParticlesResult, createAmbientParticles } from './AmbientParticles3D';
 import { AnimeFloorLayoutResult, createAnimeFloorLayout } from './AnimeFloorLayout';
+import { createAnimeKaraoke3D, KaraokeStageResult } from './AnimeKaraoke3D';
 import { createAnimePostBox, PostBoxResult } from './AnimePostBox3D';
 import { createQuizKiosk, QuizKioskResult } from './AnimeQuizKiosk3D';
 import { createAnimeSoundboard, SoundboardResult } from './AnimeSoundboard3D';
@@ -19,6 +20,7 @@ import { BookshelfObstacle } from './BookshelfGeometry';
 import { CafeBaristaResult, createCafeBarista } from './CafeBarista3D';
 import { CharacterController } from './CharacterController';
 import { createCosmicTelescope, TelescopeResult } from './CosmicTelescope3D';
+import { createCyberNeonBoard3D, NeonBoard3DResult } from './CyberNeonBoard3D';
 import { createDirectoryTerminal, DirectoryTerminalResult } from './DirectoryTerminal3D';
 import { DynamicBooksManager } from './DynamicBooksManager';
 import { createElevator, ElevatorResult } from './ElevatorTransit';
@@ -56,6 +58,8 @@ export default function BookstoreScene() {
     const soundboardRef = useRef<SoundboardResult | null>(null);
     const djBoothRef = useRef<VinylDJResult | null>(null);
     const trophyCaseRef = useRef<TrophyCaseResult | null>(null);
+    const karaokeStageRef = useRef<KaraokeStageResult | null>(null);
+    const neonBoardRef = useRef<NeonBoard3DResult | null>(null);
     const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
     const fireworksLauncherRef = useRef<Fireworks3DResult | null>(null);
     const origamiStudioRef = useRef<OrigamiStudio3DResult | null>(null);
@@ -121,6 +125,8 @@ export default function BookstoreScene() {
         setOrigamiOpen,
         setMetroCardOpen,
         setVendingOpen,
+        setKaraokeOpen,
+        setNeonBoardOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -148,6 +154,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'karaoke') {
+            setKaraokeOpen(true);
+        } else if (target.type === 'neonboard') {
+            setNeonBoardOpen(true);
         } else if (target.type === 'metrogate') {
             setMetroCardOpen(true);
         } else if (target.type === 'vending') {
@@ -222,6 +232,8 @@ export default function BookstoreScene() {
         setOrigamiOpen,
         setMetroCardOpen,
         setVendingOpen,
+        setKaraokeOpen,
+        setNeonBoardOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -359,6 +371,16 @@ export default function BookstoreScene() {
         trophyCase.group.visible = false;
         scene.add(trophyCase.group);
         trophyCaseRef.current = trophyCase;
+
+        const karaokeStage = createAnimeKaraoke3D([18, 0, 8]);
+        karaokeStage.group.visible = false;
+        scene.add(karaokeStage.group);
+        karaokeStageRef.current = karaokeStage;
+
+        const neonBoard = createCyberNeonBoard3D([0, 3.2, 17.6]);
+        neonBoard.group.visible = false;
+        scene.add(neonBoard.group);
+        neonBoardRef.current = neonBoard;
 
         const arcade = createAnimeTriviaArcade([-18, 0, 14]);
         arcade.group.visible = false;
@@ -585,6 +607,28 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 2) {
+                if (karaokeStageRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        karaokeStageRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setKaraokeOpen(true);
+                        return;
+                    }
+                }
+
+                if (neonBoardRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        neonBoardRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setNeonBoardOpen(true);
+                        return;
+                    }
+                }
+
                 if (trophyCaseRef.current) {
                     const intersects = raycaster.intersectObjects(
                         trophyCaseRef.current.group.children,
@@ -822,6 +866,14 @@ export default function BookstoreScene() {
                     trophyCaseRef.current.update(delta);
                 }
 
+                if (karaokeStageRef.current && karaokeStageRef.current.group.visible) {
+                    karaokeStageRef.current.update(delta);
+                }
+
+                if (neonBoardRef.current && neonBoardRef.current.group.visible) {
+                    neonBoardRef.current.update(delta);
+                }
+
                 if (arcadeRef.current && arcadeRef.current.group.visible) {
                     arcadeRef.current.update(delta);
                 }
@@ -911,6 +963,8 @@ export default function BookstoreScene() {
         setOrigamiOpen,
         setMetroCardOpen,
         setVendingOpen,
+        setKaraokeOpen,
+        setNeonBoardOpen,
     ]);
 
     useEffect(() => {
@@ -992,6 +1046,8 @@ export default function BookstoreScene() {
         if (radioStationRef.current) radioStationRef.current.group.visible = currentFloor === 2;
         if (djBoothRef.current) djBoothRef.current.group.visible = currentFloor === 2;
         if (trophyCaseRef.current) trophyCaseRef.current.group.visible = currentFloor === 2;
+        if (karaokeStageRef.current) karaokeStageRef.current.group.visible = currentFloor === 2;
+        if (neonBoardRef.current) neonBoardRef.current.group.visible = currentFloor === 2;
         if (arcadeRef.current) arcadeRef.current.group.visible = currentFloor === 2;
 
         rooftopLayoutRef.current.group.visible = currentFloor === 3;
@@ -1038,6 +1094,8 @@ export default function BookstoreScene() {
                 soundboardRef.current?.obstacle,
                 djBoothRef.current?.obstacle,
                 trophyCaseRef.current?.obstacle,
+                karaokeStageRef.current?.obstacle,
+                neonBoardRef.current?.obstacle,
                 arcadeRef.current?.obstacle,
                 ...animeLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
