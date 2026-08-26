@@ -521,6 +521,26 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const taikoPos = new THREE.Vector3(-18, 0, 0);
+            if (this.position.distanceTo(taikoPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'taiko',
+                    id: 'taiko-1',
+                    name: 'Traditional Festival Taiko Drum',
+                });
+                return;
+            }
+
+            const windchimePos = new THREE.Vector3(18, 0, 0);
+            if (this.position.distanceTo(windchimePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'windchime',
+                    id: 'windchime-1',
+                    name: 'Rooftop Furin Wind Chime Gazebo',
+                });
+                return;
+            }
         }
 
         let nearestAisle: { genre: BookstoreGenre; distance: number } | null = null;

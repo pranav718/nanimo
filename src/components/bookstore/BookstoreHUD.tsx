@@ -46,6 +46,7 @@ export default function BookstoreHUD() {
         setVendingOpen,
         setKaraokeOpen,
         setNeonBoardOpen,
+        setTaikoOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -206,6 +207,13 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setTaikoOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Taiko</span>
                         </button>
 
                         <button
@@ -464,6 +472,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'taiko'
+                                    ? 'Strike Festival Taiko Drum'
+                                    : proximityTarget.type === 'windchime'
+                                    ? 'Listen to Furin Glass Wind Chimes'
                                     : proximityTarget.type === 'karaoke'
                                     ? 'Sing Anime Songs in Karaoke Booth'
                                     : proximityTarget.type === 'neonboard'
@@ -559,20 +571,16 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Taiko Drum Rhythm</span>
+                                <span className="font-mono text-amber-300">Play Drum</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Karaoke Lounge</span>
                                 <span className="font-mono text-amber-300">Sing in Booth</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Cyber Neon Billboard</span>
-                                <span className="font-mono text-amber-300">Customize Marquee</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Hanabi Fireworks</span>
                                 <span className="font-mono text-amber-300">H</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Origami Studio</span>
-                                <span className="font-mono text-amber-300">W</span>
                             </div>
                         </div>
 
