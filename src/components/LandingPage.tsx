@@ -9,6 +9,7 @@ import AnimeScreeningModal from './bookstore/AnimeScreeningModal';
 import AnimeSoundboardModal from './bookstore/AnimeSoundboardModal';
 import AnimeSynthesizerModal from './bookstore/AnimeSynthesizerModal';
 import AnimeTriviaArcadeModal from './bookstore/AnimeTriviaArcadeModal';
+import AnimeVendingMachineModal from './bookstore/AnimeVendingMachineModal';
 import AnimeVinylDJModal from './bookstore/AnimeVinylDJModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
 import BookInspect3D from './bookstore/BookInspect3D';
@@ -31,6 +32,7 @@ import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
 import TokyoFireworksModal from './bookstore/TokyoFireworksModal';
+import TokyoMetroCardModal from './bookstore/TokyoMetroCardModal';
 import TrophyShowcaseModal from './bookstore/TrophyShowcaseModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
@@ -78,6 +80,8 @@ export default function LandingPage() {
             <TrophyShowcaseModal />
             <TokyoFireworksModal />
             <OrigamiStudioModal />
+            <TokyoMetroCardModal />
+            <AnimeVendingMachineModal />
             <AmbientAudioPlayer />
         </main>
     );

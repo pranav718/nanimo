@@ -9,6 +9,7 @@ import { createAnimePostBox, PostBoxResult } from './AnimePostBox3D';
 import { createQuizKiosk, QuizKioskResult } from './AnimeQuizKiosk3D';
 import { createAnimeSoundboard, SoundboardResult } from './AnimeSoundboard3D';
 import { ArcadeResult, createAnimeTriviaArcade } from './AnimeTriviaArcade3D';
+import { createAnimeVendingMachine3D, VendingMachine3DResult } from './AnimeVendingMachine3D';
 import { createVinylDJBooth, VinylDJResult } from './AnimeVinylDJ3D';
 import { applyAtmosphere } from './AtmospherePresets';
 import { createPetCompanion, PetCompanionResult } from './AvatarPetCompanion3D';
@@ -34,6 +35,7 @@ import { createReadingNook, ReadingNookResult } from './ReadingNook3D';
 import { createRooftopFloorLayout, RooftopLayoutResult } from './RooftopFloorLayout';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import { createTokyoFireworks3D, Fireworks3DResult } from './TokyoFireworks3D';
+import { createTokyoMetroTicketGate, MetroGateResult } from './TokyoMetroTicketGate3D';
 import TouchJoystick from './TouchJoystick';
 import { createTrophyShowcase, TrophyCaseResult } from './TrophyShowcase3D';
 import { createZenBonsaiGarden, BonsaiGardenResult } from './ZenBonsaiGarden3D';
@@ -57,6 +59,8 @@ export default function BookstoreScene() {
     const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
     const fireworksLauncherRef = useRef<Fireworks3DResult | null>(null);
     const origamiStudioRef = useRef<OrigamiStudio3DResult | null>(null);
+    const metroGateRef = useRef<MetroGateResult | null>(null);
+    const vendingMachineRef = useRef<VendingMachine3DResult | null>(null);
     const postBoxRef = useRef<PostBoxResult | null>(null);
     const arcadeRef = useRef<ArcadeResult | null>(null);
     const telescopeRef = useRef<TelescopeResult | null>(null);
@@ -115,6 +119,8 @@ export default function BookstoreScene() {
         setTrophyOpen,
         setFireworksOpen,
         setOrigamiOpen,
+        setMetroCardOpen,
+        setVendingOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -142,6 +148,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'metrogate') {
+            setMetroCardOpen(true);
+        } else if (target.type === 'vending') {
+            setVendingOpen(true);
         } else if (target.type === 'fireworks') {
             setFireworksOpen(true);
         } else if (target.type === 'origami') {
@@ -210,6 +220,8 @@ export default function BookstoreScene() {
         setTrophyOpen,
         setFireworksOpen,
         setOrigamiOpen,
+        setMetroCardOpen,
+        setVendingOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -298,6 +310,14 @@ export default function BookstoreScene() {
         const postBox = createAnimePostBox([-18, 0, -2]);
         scene.add(postBox.group);
         postBoxRef.current = postBox;
+
+        const metroGate = createTokyoMetroTicketGate([-8, 0, -17]);
+        scene.add(metroGate.group);
+        metroGateRef.current = metroGate;
+
+        const vendingMachine = createAnimeVendingMachine3D([18, 0, 2]);
+        scene.add(vendingMachine.group);
+        vendingMachineRef.current = vendingMachine;
 
         const origamiStudio = createOrigamiStudio3D([-18, 0, 14]);
         scene.add(origamiStudio.group);
@@ -391,6 +411,8 @@ export default function BookstoreScene() {
             readingNook.obstacle,
             teaCart.obstacle,
             postBox.obstacle,
+            metroGate.obstacle,
+            vendingMachine.obstacle,
             origamiStudio.obstacle,
             gachapon.obstacle,
             personalShelf.obstacle,
@@ -439,6 +461,28 @@ export default function BookstoreScene() {
             }
 
             if (floor === 1) {
+                if (metroGateRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        metroGateRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setMetroCardOpen(true);
+                        return;
+                    }
+                }
+
+                if (vendingMachineRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        vendingMachineRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setVendingOpen(true);
+                        return;
+                    }
+                }
+
                 if (origamiStudioRef.current) {
                     const intersects = raycaster.intersectObjects(
                         origamiStudioRef.current.group.children,
@@ -750,6 +794,14 @@ export default function BookstoreScene() {
                     postBoxRef.current.update(delta);
                 }
 
+                if (metroGateRef.current && metroGateRef.current.group.visible) {
+                    metroGateRef.current.update(delta);
+                }
+
+                if (vendingMachineRef.current && vendingMachineRef.current.group.visible) {
+                    vendingMachineRef.current.update(delta);
+                }
+
                 if (origamiStudioRef.current && origamiStudioRef.current.group.visible) {
                     origamiStudioRef.current.update(delta);
                 }
@@ -857,6 +909,8 @@ export default function BookstoreScene() {
         setTrophyOpen,
         setFireworksOpen,
         setOrigamiOpen,
+        setMetroCardOpen,
+        setVendingOpen,
     ]);
 
     useEffect(() => {
@@ -926,6 +980,8 @@ export default function BookstoreScene() {
         if (cafeBaristaRef.current) cafeBaristaRef.current.group.visible = currentFloor === 1;
         if (teaCartRef.current) teaCartRef.current.group.visible = currentFloor === 1;
         if (postBoxRef.current) postBoxRef.current.group.visible = currentFloor === 1;
+        if (metroGateRef.current) metroGateRef.current.group.visible = currentFloor === 1;
+        if (vendingMachineRef.current) vendingMachineRef.current.group.visible = currentFloor === 1;
         if (origamiStudioRef.current) origamiStudioRef.current.group.visible = currentFloor === 1;
         if (drawingTableRef.current) drawingTableRef.current.group.visible = currentFloor === 1;
         if (readingNookRef.current) readingNookRef.current.group.visible = currentFloor === 1;
@@ -962,6 +1018,8 @@ export default function BookstoreScene() {
                 readingNookRef.current?.obstacle,
                 teaCartRef.current?.obstacle,
                 postBoxRef.current?.obstacle,
+                metroGateRef.current?.obstacle,
+                vendingMachineRef.current?.obstacle,
                 origamiStudioRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
                 personalShelfRef.current?.obstacle,
