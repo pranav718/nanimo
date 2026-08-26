@@ -24,11 +24,13 @@ import MangaReaderModal from './bookstore/MangaReaderModal';
 import MangaSketchpadModal from './bookstore/MangaSketchpadModal';
 import MatchaTeaCartModal from './bookstore/MatchaTeaCartModal';
 import OmikujiFortuneModal from './bookstore/OmikujiFortuneModal';
+import OrigamiStudioModal from './bookstore/OrigamiStudioModal';
 import PetSelectorModal from './bookstore/PetSelectorModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
 import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
+import TokyoFireworksModal from './bookstore/TokyoFireworksModal';
 import TrophyShowcaseModal from './bookstore/TrophyShowcaseModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
@@ -74,6 +76,8 @@ export default function LandingPage() {
             <AnimePostcardModal />
             <AmbienceMixerModal />
             <TrophyShowcaseModal />
+            <TokyoFireworksModal />
+            <OrigamiStudioModal />
             <AmbientAudioPlayer />
         </main>
     );
