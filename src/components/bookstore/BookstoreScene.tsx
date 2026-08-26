@@ -1127,12 +1127,12 @@ export default function BookstoreScene() {
                 readingNookRef.current?.obstacle,
                 teaCartRef.current?.obstacle,
                 postBoxRef.current?.obstacle,
-                metroGate.obstacle,
-                vendingMachine.obstacle,
+                metroGateRef.current?.obstacle,
+                vendingMachineRef.current?.obstacle,
                 origamiStudioRef.current?.obstacle,
-                gachapon.obstacle,
-                personalShelf.obstacle,
-                cafeBarista.obstacle,
+                gachaponRef.current?.obstacle,
+                personalShelfRef.current?.obstacle,
+                cafeBaristaRef.current?.obstacle,
                 ...mangaLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);
