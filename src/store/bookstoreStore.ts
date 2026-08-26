@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -67,6 +67,8 @@ interface BookstoreStore {
     isTeaCartOpen: boolean;
     isDJOpen: boolean;
     isPostcardOpen: boolean;
+    isAmbienceMixerOpen: boolean;
+    isTrophyOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -112,6 +114,8 @@ interface BookstoreStore {
     setTeaCartOpen: (open: boolean) => void;
     setDJOpen: (open: boolean) => void;
     setPostcardOpen: (open: boolean) => void;
+    setAmbienceMixerOpen: (open: boolean) => void;
+    setTrophyOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -205,6 +209,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isTeaCartOpen: false,
     isDJOpen: false,
     isPostcardOpen: false,
+    isAmbienceMixerOpen: false,
+    isTrophyOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -361,6 +367,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setPostcardOpen: (open: boolean) => {
         set({ isPostcardOpen: open });
+    },
+
+    setAmbienceMixerOpen: (open: boolean) => {
+        set({ isAmbienceMixerOpen: open });
+    },
+
+    setTrophyOpen: (open: boolean) => {
+        set({ isTrophyOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
