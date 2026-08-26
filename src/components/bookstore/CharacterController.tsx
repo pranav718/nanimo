@@ -347,6 +347,26 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const metroGatePos = new THREE.Vector3(-8, 0, -17);
+            if (this.position.distanceTo(metroGatePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'metrogate',
+                    id: 'metrogate-1',
+                    name: 'Tokyo Metro Ticket Gate',
+                });
+                return;
+            }
+
+            const vendingPos = new THREE.Vector3(18, 0, 2);
+            if (this.position.distanceTo(vendingPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'vending',
+                    id: 'vending-1',
+                    name: 'Tokyo Street Drink Vending Machine',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {

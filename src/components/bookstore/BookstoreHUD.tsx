@@ -42,6 +42,8 @@ export default function BookstoreHUD() {
         setTrophyOpen,
         setFireworksOpen,
         setOrigamiOpen,
+        setMetroCardOpen,
+        setVendingOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -202,6 +204,20 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setMetroCardOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Metro</span>
+                        </button>
+
+                        <button
+                            onClick={() => setVendingOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Vending</span>
                         </button>
 
                         <button
@@ -432,6 +448,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'metrogate'
+                                    ? 'Tap Tokyo Metro Commuter IC Pass'
+                                    : proximityTarget.type === 'vending'
+                                    ? 'Buy Chilled Japanese Drink Can'
                                     : proximityTarget.type === 'fireworks'
                                     ? 'Launch Tokyo Rooftop Festival Fireworks'
                                     : proximityTarget.type === 'origami'
@@ -491,8 +511,6 @@ export default function BookstoreHUD() {
                         <span>Q for Relics</span>
                         <span>•</span>
                         <span>Y for DJ</span>
-                        <span>•</span>
-                        <span>I for Post</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -523,11 +541,11 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Hanabi Fireworks Launcher</span>
+                                <span className="text-white/80 font-medium">Hanabi Fireworks</span>
                                 <span className="font-mono text-amber-300">H</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Origami Folding Studio</span>
+                                <span className="text-white/80 font-medium">Origami Studio</span>
                                 <span className="font-mono text-amber-300">W</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
@@ -535,16 +553,8 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">Z</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Trophy & Relic Showcase</span>
+                                <span className="text-white/80 font-medium">Trophy & Relics</span>
                                 <span className="font-mono text-amber-300">Q</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Vinyl DJ Turntable Booth</span>
-                                <span className="font-mono text-amber-300">Y</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Tokyo Postcard Studio</span>
-                                <span className="font-mono text-amber-300">I</span>
                             </div>
                         </div>
 
