@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending' | 'karaoke' | 'neonboard';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending' | 'karaoke' | 'neonboard' | 'taiko' | 'windchime';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -75,6 +75,7 @@ interface BookstoreStore {
     isVendingOpen: boolean;
     isKaraokeOpen: boolean;
     isNeonBoardOpen: boolean;
+    isTaikoOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -128,6 +129,7 @@ interface BookstoreStore {
     setVendingOpen: (open: boolean) => void;
     setKaraokeOpen: (open: boolean) => void;
     setNeonBoardOpen: (open: boolean) => void;
+    setTaikoOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -229,6 +231,7 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isVendingOpen: false,
     isKaraokeOpen: false,
     isNeonBoardOpen: false,
+    isTaikoOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -417,6 +420,10 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setNeonBoardOpen: (open: boolean) => {
         set({ isNeonBoardOpen: open });
+    },
+
+    setTaikoOpen: (open: boolean) => {
+        set({ isTaikoOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
