@@ -35,11 +35,13 @@ import { createPersonalShelf, PersonalShelfResult } from './PersonalShelf';
 import { createRadioStation, RadioStationResult } from './RadioStation3D';
 import { createReadingNook, ReadingNookResult } from './ReadingNook3D';
 import { createRooftopFloorLayout, RooftopLayoutResult } from './RooftopFloorLayout';
+import { createTaikoDrum3D, TaikoDrum3DResult } from './TaikoDrum3D';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import { createTokyoFireworks3D, Fireworks3DResult } from './TokyoFireworks3D';
 import { createTokyoMetroTicketGate, MetroGateResult } from './TokyoMetroTicketGate3D';
 import TouchJoystick from './TouchJoystick';
 import { createTrophyShowcase, TrophyCaseResult } from './TrophyShowcase3D';
+import { createWindChimePavilion3D, WindChimePavilionResult } from './WindChimePavilion3D';
 import { createZenBonsaiGarden, BonsaiGardenResult } from './ZenBonsaiGarden3D';
 import { createZenKoiPond, ZenKoiPondResult } from './ZenKoiPond3D';
 
@@ -61,6 +63,8 @@ export default function BookstoreScene() {
     const karaokeStageRef = useRef<KaraokeStageResult | null>(null);
     const neonBoardRef = useRef<NeonBoard3DResult | null>(null);
     const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
+    const taikoDrumRef = useRef<TaikoDrum3DResult | null>(null);
+    const windChimePavilionRef = useRef<WindChimePavilionResult | null>(null);
     const fireworksLauncherRef = useRef<Fireworks3DResult | null>(null);
     const origamiStudioRef = useRef<OrigamiStudio3DResult | null>(null);
     const metroGateRef = useRef<MetroGateResult | null>(null);
@@ -127,6 +131,7 @@ export default function BookstoreScene() {
         setVendingOpen,
         setKaraokeOpen,
         setNeonBoardOpen,
+        setTaikoOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -154,6 +159,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'taiko') {
+            setTaikoOpen(true);
+        } else if (target.type === 'windchime') {
+            setAmbienceMixerOpen(true);
         } else if (target.type === 'karaoke') {
             setKaraokeOpen(true);
         } else if (target.type === 'neonboard') {
@@ -234,6 +243,7 @@ export default function BookstoreScene() {
         setVendingOpen,
         setKaraokeOpen,
         setNeonBoardOpen,
+        setTaikoOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -416,6 +426,16 @@ export default function BookstoreScene() {
         bonsaiGarden.group.visible = false;
         scene.add(bonsaiGarden.group);
         bonsaiGardenRef.current = bonsaiGarden;
+
+        const taikoDrum = createTaikoDrum3D([-18, 0, 0]);
+        taikoDrum.group.visible = false;
+        scene.add(taikoDrum.group);
+        taikoDrumRef.current = taikoDrum;
+
+        const windChimePavilion = createWindChimePavilion3D([18, 0, 0]);
+        windChimePavilion.group.visible = false;
+        scene.add(windChimePavilion.group);
+        windChimePavilionRef.current = windChimePavilion;
 
         const fireworksLauncher = createTokyoFireworks3D([-12, 0, -10]);
         fireworksLauncher.group.visible = false;
@@ -710,6 +730,28 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 3) {
+                if (taikoDrumRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        taikoDrumRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setTaikoOpen(true);
+                        return;
+                    }
+                }
+
+                if (windChimePavilionRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        windChimePavilionRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setAmbienceMixerOpen(true);
+                        return;
+                    }
+                }
+
                 if (fireworksLauncherRef.current) {
                     const intersects = raycaster.intersectObjects(
                         fireworksLauncherRef.current.group.children,
@@ -910,6 +952,14 @@ export default function BookstoreScene() {
                     bonsaiGardenRef.current.update(delta);
                 }
 
+                if (taikoDrumRef.current && taikoDrumRef.current.group.visible) {
+                    taikoDrumRef.current.update(delta);
+                }
+
+                if (windChimePavilionRef.current && windChimePavilionRef.current.group.visible) {
+                    windChimePavilionRef.current.update(delta);
+                }
+
                 if (fireworksLauncherRef.current && fireworksLauncherRef.current.group.visible) {
                     fireworksLauncherRef.current.update(delta);
                 }
@@ -965,6 +1015,7 @@ export default function BookstoreScene() {
         setVendingOpen,
         setKaraokeOpen,
         setNeonBoardOpen,
+        setTaikoOpen,
     ]);
 
     useEffect(() => {
@@ -1056,6 +1107,8 @@ export default function BookstoreScene() {
         if (telescopeRef.current) telescopeRef.current.group.visible = currentFloor === 3;
         if (shrineRef.current) shrineRef.current.group.visible = currentFloor === 3;
         if (bonsaiGardenRef.current) bonsaiGardenRef.current.group.visible = currentFloor === 3;
+        if (taikoDrumRef.current) taikoDrumRef.current.group.visible = currentFloor === 3;
+        if (windChimePavilionRef.current) windChimePavilionRef.current.group.visible = currentFloor === 3;
         if (fireworksLauncherRef.current) fireworksLauncherRef.current.group.visible = currentFloor === 3;
 
         if (elevatorRef.current) {
@@ -1074,12 +1127,12 @@ export default function BookstoreScene() {
                 readingNookRef.current?.obstacle,
                 teaCartRef.current?.obstacle,
                 postBoxRef.current?.obstacle,
-                metroGateRef.current?.obstacle,
-                vendingMachineRef.current?.obstacle,
+                metroGate.obstacle,
+                vendingMachine.obstacle,
                 origamiStudioRef.current?.obstacle,
-                gachaponRef.current?.obstacle,
-                personalShelfRef.current?.obstacle,
-                cafeBaristaRef.current?.obstacle,
+                gachapon.obstacle,
+                personalShelf.obstacle,
+                cafeBarista.obstacle,
                 ...mangaLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);
@@ -1111,6 +1164,8 @@ export default function BookstoreScene() {
                 telescopeRef.current?.obstacle,
                 shrineRef.current?.obstacle,
                 bonsaiGardenRef.current?.obstacle,
+                taikoDrumRef.current?.obstacle,
+                windChimePavilionRef.current?.obstacle,
                 fireworksLauncherRef.current?.obstacle,
                 ...rooftopLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];

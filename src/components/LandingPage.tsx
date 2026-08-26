@@ -33,6 +33,7 @@ import PhotoModeModal from './bookstore/PhotoModeModal';
 import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
+import TaikoDrumModal from './bookstore/TaikoDrumModal';
 import TokyoFireworksModal from './bookstore/TokyoFireworksModal';
 import TokyoMetroCardModal from './bookstore/TokyoMetroCardModal';
 import TrophyShowcaseModal from './bookstore/TrophyShowcaseModal';
@@ -86,6 +87,7 @@ export default function LandingPage() {
             <AnimeVendingMachineModal />
             <AnimeKaraokeModal />
             <CyberNeonBoardModal />
+            <TaikoDrumModal />
             <AmbientAudioPlayer />
         </main>
     );
