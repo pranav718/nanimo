@@ -40,6 +40,8 @@ export default function BookstoreHUD() {
         setPostcardOpen,
         setAmbienceMixerOpen,
         setTrophyOpen,
+        setFireworksOpen,
+        setOrigamiOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -74,6 +76,10 @@ export default function BookstoreHUD() {
                 setAmbienceMixerOpen(true);
             } else if (e.key === 'q' || e.key === 'Q') {
                 setTrophyOpen(true);
+            } else if (e.key === 'h' || e.key === 'H') {
+                setFireworksOpen(true);
+            } else if (e.key === 'w' || e.key === 'W') {
+                setOrigamiOpen(true);
             } else if (e.key === 'r' || e.key === 'R') {
                 setRadioOpen(true);
             } else if (e.key === 'g' || e.key === 'G') {
@@ -102,7 +108,7 @@ export default function BookstoreHUD() {
                 toggleFirstPerson();
             } else if (e.key === 'p' || e.key === 'P') {
                 setPhotoMode(!isPhotoMode);
-            } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
+            } else if (e.key === '?') {
                 setHelpOpen(!isHelpOpen);
             }
         },
@@ -113,6 +119,8 @@ export default function BookstoreHUD() {
             setPassportOpen,
             setAmbienceMixerOpen,
             setTrophyOpen,
+            setFireworksOpen,
+            setOrigamiOpen,
             setRadioOpen,
             setReadingGoalOpen,
             setTriviaArcadeOpen,
@@ -194,6 +202,22 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setFireworksOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Hanabi</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">H</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setOrigamiOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Origami</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">W</kbd>
                         </button>
 
                         <button
@@ -408,6 +432,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'fireworks'
+                                    ? 'Launch Tokyo Rooftop Festival Fireworks'
+                                    : proximityTarget.type === 'origami'
+                                    ? 'Fold Traditional Japanese Washi Origami'
                                     : proximityTarget.type === 'trophy'
                                     ? 'Inspect Rare Otaku Relics & Trophies'
                                     : proximityTarget.type === 'bonsai'
@@ -454,6 +482,10 @@ export default function BookstoreHUD() {
                     <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-1.5 backdrop-blur-md">
                         <span>WASD to Move</span>
                         <span>•</span>
+                        <span>H for Hanabi</span>
+                        <span>•</span>
+                        <span>W for Origami</span>
+                        <span>•</span>
                         <span>Z for Mixer</span>
                         <span>•</span>
                         <span>Q for Relics</span>
@@ -461,10 +493,6 @@ export default function BookstoreHUD() {
                         <span>Y for DJ</span>
                         <span>•</span>
                         <span>I for Post</span>
-                        <span>•</span>
-                        <span>U for Tea</span>
-                        <span>•</span>
-                        <span>F for Fortune</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -495,6 +523,14 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Hanabi Fireworks Launcher</span>
+                                <span className="font-mono text-amber-300">H</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Origami Folding Studio</span>
+                                <span className="font-mono text-amber-300">W</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Soundscape Mixer</span>
                                 <span className="font-mono text-amber-300">Z</span>
                             </div>
@@ -509,22 +545,6 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Tokyo Postcard Studio</span>
                                 <span className="font-mono text-amber-300">I</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Matcha & Boba Tea Cart</span>
-                                <span className="font-mono text-amber-300">U</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Omikuji Fortune Shrine</span>
-                                <span className="font-mono text-amber-300">F</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Anime Trivia Arcade</span>
-                                <span className="font-mono text-amber-300">T</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Stargazer Telescope</span>
-                                <span className="font-mono text-amber-300">L</span>
                             </div>
                         </div>
 

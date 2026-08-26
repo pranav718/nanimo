@@ -337,6 +337,16 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const origamiPos = new THREE.Vector3(-18, 0, 14);
+            if (this.position.distanceTo(origamiPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'origami',
+                    id: 'origami-1',
+                    name: 'Traditional Origami Paper Craft Studio',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {
@@ -458,6 +468,16 @@ export class CharacterController {
                     type: 'bonsai',
                     id: 'bonsai-1',
                     name: 'Rooftop Zen Bonsai Garden',
+                });
+                return;
+            }
+
+            const fireworksPos = new THREE.Vector3(-12, 0, -10);
+            if (this.position.distanceTo(fireworksPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'fireworks',
+                    id: 'fireworks-1',
+                    name: 'Tokyo Rooftop Fireworks Launcher',
                 });
                 return;
             }
