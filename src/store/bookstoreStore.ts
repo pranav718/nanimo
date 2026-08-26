@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -69,6 +69,8 @@ interface BookstoreStore {
     isPostcardOpen: boolean;
     isAmbienceMixerOpen: boolean;
     isTrophyOpen: boolean;
+    isFireworksOpen: boolean;
+    isOrigamiOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -116,6 +118,8 @@ interface BookstoreStore {
     setPostcardOpen: (open: boolean) => void;
     setAmbienceMixerOpen: (open: boolean) => void;
     setTrophyOpen: (open: boolean) => void;
+    setFireworksOpen: (open: boolean) => void;
+    setOrigamiOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -211,6 +215,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isPostcardOpen: false,
     isAmbienceMixerOpen: false,
     isTrophyOpen: false,
+    isFireworksOpen: false,
+    isOrigamiOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -375,6 +381,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setTrophyOpen: (open: boolean) => {
         set({ isTrophyOpen: open });
+    },
+
+    setFireworksOpen: (open: boolean) => {
+        set({ isFireworksOpen: open });
+    },
+
+    setOrigamiOpen: (open: boolean) => {
+        set({ isOrigamiOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
