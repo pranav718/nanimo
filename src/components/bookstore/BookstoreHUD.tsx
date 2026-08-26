@@ -38,6 +38,8 @@ export default function BookstoreHUD() {
         setTeaCartOpen,
         setDJOpen,
         setPostcardOpen,
+        setAmbienceMixerOpen,
+        setTrophyOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -68,6 +70,10 @@ export default function BookstoreHUD() {
                 setBookmarksOpen(true);
             } else if (e.key === 'n' || e.key === 'N') {
                 setPassportOpen(true);
+            } else if (e.key === 'z' || e.key === 'Z') {
+                setAmbienceMixerOpen(true);
+            } else if (e.key === 'q' || e.key === 'Q') {
+                setTrophyOpen(true);
             } else if (e.key === 'r' || e.key === 'R') {
                 setRadioOpen(true);
             } else if (e.key === 'g' || e.key === 'G') {
@@ -105,6 +111,8 @@ export default function BookstoreHUD() {
             setWardrobeOpen,
             setBookmarksOpen,
             setPassportOpen,
+            setAmbienceMixerOpen,
+            setTrophyOpen,
             setRadioOpen,
             setReadingGoalOpen,
             setTriviaArcadeOpen,
@@ -186,6 +194,22 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setAmbienceMixerOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Mixer</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">Z</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setTrophyOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Relics</span>
+                            <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">Q</kbd>
                         </button>
 
                         <button
@@ -384,6 +408,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'trophy'
+                                    ? 'Inspect Rare Otaku Relics & Trophies'
+                                    : proximityTarget.type === 'bonsai'
+                                    ? 'Meditate at Rooftop Zen Bonsai Garden'
                                     : proximityTarget.type === 'dj'
                                     ? 'Spin Vinyl Record on DJ Turntables'
                                     : proximityTarget.type === 'postbox'
@@ -426,6 +454,10 @@ export default function BookstoreHUD() {
                     <div className="flex items-center gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-1.5 backdrop-blur-md">
                         <span>WASD to Move</span>
                         <span>•</span>
+                        <span>Z for Mixer</span>
+                        <span>•</span>
+                        <span>Q for Relics</span>
+                        <span>•</span>
                         <span>Y for DJ</span>
                         <span>•</span>
                         <span>I for Post</span>
@@ -433,10 +465,6 @@ export default function BookstoreHUD() {
                         <span>U for Tea</span>
                         <span>•</span>
                         <span>F for Fortune</span>
-                        <span>•</span>
-                        <span>T for Arcade</span>
-                        <span>•</span>
-                        <span>L for Telescope</span>
                     </div>
                     <div className="rounded-full border border-white/10 bg-black/50 px-3 py-1.5 backdrop-blur-md font-mono text-[10px]">
                         NANIMO 3D SPATIAL ARCHIVE
@@ -467,6 +495,14 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Soundscape Mixer</span>
+                                <span className="font-mono text-amber-300">Z</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Trophy & Relic Showcase</span>
+                                <span className="font-mono text-amber-300">Q</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Vinyl DJ Turntable Booth</span>
                                 <span className="font-mono text-amber-300">Y</span>
                             </div>
@@ -489,14 +525,6 @@ export default function BookstoreHUD() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Stargazer Telescope</span>
                                 <span className="font-mono text-amber-300">L</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Lo-Fi Radio Station</span>
-                                <span className="font-mono text-amber-300">R</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Reading Goal Tracker</span>
-                                <span className="font-mono text-amber-300">G</span>
                             </div>
                         </div>
 

@@ -388,6 +388,16 @@ export class CharacterController {
                 return;
             }
 
+            const trophyPos = new THREE.Vector3(-18, 0, -2);
+            if (this.position.distanceTo(trophyPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'trophy',
+                    id: 'trophy-1',
+                    name: 'Otaku Artifact Trophy Showcase',
+                });
+                return;
+            }
+
             const seats: [number, number, number][] = [[-5.5, 0, -7], [5.5, 0, -7], [0, 0, -3]];
             for (const s of seats) {
                 const sVec = new THREE.Vector3(...s);
@@ -438,6 +448,16 @@ export class CharacterController {
                     type: 'shrine',
                     id: 'shrine-1',
                     name: 'Omikuji Fortune Shrine',
+                });
+                return;
+            }
+
+            const bonsaiPos = new THREE.Vector3(12, 0, 10);
+            if (this.position.distanceTo(bonsaiPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'bonsai',
+                    id: 'bonsai-1',
+                    name: 'Rooftop Zen Bonsai Garden',
                 });
                 return;
             }
