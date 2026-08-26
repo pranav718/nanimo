@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import AmbienceMixerModal from './bookstore/AmbienceMixerModal';
 import AmbientAudioPlayer from './bookstore/AmbientAudioPlayer';
 import AnimePostcardModal from './bookstore/AnimePostcardModal';
 import AnimeQuizModal from './bookstore/AnimeQuizModal';
@@ -28,6 +29,7 @@ import PhotoModeModal from './bookstore/PhotoModeModal';
 import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
+import TrophyShowcaseModal from './bookstore/TrophyShowcaseModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
     ssr: false,
@@ -70,6 +72,8 @@ export default function LandingPage() {
             <OmikujiFortuneModal />
             <AnimeVinylDJModal />
             <AnimePostcardModal />
+            <AmbienceMixerModal />
+            <TrophyShowcaseModal />
             <AmbientAudioPlayer />
         </main>
     );

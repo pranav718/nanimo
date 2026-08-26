@@ -33,6 +33,8 @@ import { createReadingNook, ReadingNookResult } from './ReadingNook3D';
 import { createRooftopFloorLayout, RooftopLayoutResult } from './RooftopFloorLayout';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import TouchJoystick from './TouchJoystick';
+import { createTrophyShowcase, TrophyCaseResult } from './TrophyShowcase3D';
+import { createZenBonsaiGarden, BonsaiGardenResult } from './ZenBonsaiGarden3D';
 import { createZenKoiPond, ZenKoiPondResult } from './ZenKoiPond3D';
 
 export default function BookstoreScene() {
@@ -49,6 +51,8 @@ export default function BookstoreScene() {
     const directoryTerminalRef = useRef<DirectoryTerminalResult | null>(null);
     const soundboardRef = useRef<SoundboardResult | null>(null);
     const djBoothRef = useRef<VinylDJResult | null>(null);
+    const trophyCaseRef = useRef<TrophyCaseResult | null>(null);
+    const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
     const postBoxRef = useRef<PostBoxResult | null>(null);
     const arcadeRef = useRef<ArcadeResult | null>(null);
     const telescopeRef = useRef<TelescopeResult | null>(null);
@@ -103,6 +107,8 @@ export default function BookstoreScene() {
         setTeaCartOpen,
         setDJOpen,
         setPostcardOpen,
+        setAmbienceMixerOpen,
+        setTrophyOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -130,6 +136,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'trophy') {
+            setTrophyOpen(true);
+        } else if (target.type === 'bonsai') {
+            setAmbienceMixerOpen(true);
         } else if (target.type === 'postbox') {
             setPostcardOpen(true);
         } else if (target.type === 'dj') {
@@ -186,6 +196,8 @@ export default function BookstoreScene() {
         setTeaCartOpen,
         setDJOpen,
         setPostcardOpen,
+        setAmbienceMixerOpen,
+        setTrophyOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -307,6 +319,11 @@ export default function BookstoreScene() {
         scene.add(djBooth.group);
         djBoothRef.current = djBooth;
 
+        const trophyCase = createTrophyShowcase([-18, 0, -2]);
+        trophyCase.group.visible = false;
+        scene.add(trophyCase.group);
+        trophyCaseRef.current = trophyCase;
+
         const arcade = createAnimeTriviaArcade([-18, 0, 14]);
         arcade.group.visible = false;
         scene.add(arcade.group);
@@ -336,6 +353,11 @@ export default function BookstoreScene() {
         shrine.group.visible = false;
         scene.add(shrine.group);
         shrineRef.current = shrine;
+
+        const bonsaiGarden = createZenBonsaiGarden([12, 0, 10]);
+        bonsaiGarden.group.visible = false;
+        scene.add(bonsaiGarden.group);
+        bonsaiGardenRef.current = bonsaiGarden;
 
         const booksManager = new DynamicBooksManager();
         scene.add(booksManager.group);
@@ -486,6 +508,17 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 2) {
+                if (trophyCaseRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        trophyCaseRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setTrophyOpen(true);
+                        return;
+                    }
+                }
+
                 if (djBoothRef.current) {
                     const intersects = raycaster.intersectObjects(
                         djBoothRef.current.group.children,
@@ -556,6 +589,17 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 3) {
+                if (bonsaiGardenRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        bonsaiGardenRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setAmbienceMixerOpen(true);
+                        return;
+                    }
+                }
+
                 if (shrineRef.current) {
                     const intersects = raycaster.intersectObjects(
                         shrineRef.current.group.children,
@@ -674,6 +718,10 @@ export default function BookstoreScene() {
                     djBoothRef.current.update(delta);
                 }
 
+                if (trophyCaseRef.current && trophyCaseRef.current.group.visible) {
+                    trophyCaseRef.current.update(delta);
+                }
+
                 if (arcadeRef.current && arcadeRef.current.group.visible) {
                     arcadeRef.current.update(delta);
                 }
@@ -704,6 +752,10 @@ export default function BookstoreScene() {
 
                 if (shrineRef.current && shrineRef.current.group.visible) {
                     shrineRef.current.update(delta);
+                }
+
+                if (bonsaiGardenRef.current && bonsaiGardenRef.current.group.visible) {
+                    bonsaiGardenRef.current.update(delta);
                 }
 
                 if (rooftopLayoutRef.current && rooftopLayoutRef.current.group.visible) {
@@ -749,6 +801,8 @@ export default function BookstoreScene() {
         setTeaCartOpen,
         setDJOpen,
         setPostcardOpen,
+        setAmbienceMixerOpen,
+        setTrophyOpen,
     ]);
 
     useEffect(() => {
@@ -826,6 +880,7 @@ export default function BookstoreScene() {
         if (soundboardRef.current) soundboardRef.current.group.visible = currentFloor === 2;
         if (radioStationRef.current) radioStationRef.current.group.visible = currentFloor === 2;
         if (djBoothRef.current) djBoothRef.current.group.visible = currentFloor === 2;
+        if (trophyCaseRef.current) trophyCaseRef.current.group.visible = currentFloor === 2;
         if (arcadeRef.current) arcadeRef.current.group.visible = currentFloor === 2;
 
         rooftopLayoutRef.current.group.visible = currentFloor === 3;
@@ -833,6 +888,7 @@ export default function BookstoreScene() {
         if (koiPondRef.current) koiPondRef.current.group.visible = currentFloor === 3;
         if (telescopeRef.current) telescopeRef.current.group.visible = currentFloor === 3;
         if (shrineRef.current) shrineRef.current.group.visible = currentFloor === 3;
+        if (bonsaiGardenRef.current) bonsaiGardenRef.current.group.visible = currentFloor === 3;
 
         if (elevatorRef.current) {
             const floorColor = currentFloor === 1 ? 0x7dd3fc : currentFloor === 2 ? 0xf43f5e : 0xf472b6;
@@ -866,6 +922,7 @@ export default function BookstoreScene() {
                 radioStationRef.current?.obstacle,
                 soundboardRef.current?.obstacle,
                 djBoothRef.current?.obstacle,
+                trophyCaseRef.current?.obstacle,
                 arcadeRef.current?.obstacle,
                 ...animeLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
@@ -880,6 +937,7 @@ export default function BookstoreScene() {
                 koiPondRef.current?.obstacle,
                 telescopeRef.current?.obstacle,
                 shrineRef.current?.obstacle,
+                bonsaiGardenRef.current?.obstacle,
                 ...rooftopLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
             characterRef.current.setObstacles(obs);
