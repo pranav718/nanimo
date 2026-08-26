@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending' | 'karaoke' | 'neonboard';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -73,6 +73,8 @@ interface BookstoreStore {
     isOrigamiOpen: boolean;
     isMetroCardOpen: boolean;
     isVendingOpen: boolean;
+    isKaraokeOpen: boolean;
+    isNeonBoardOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -124,6 +126,8 @@ interface BookstoreStore {
     setOrigamiOpen: (open: boolean) => void;
     setMetroCardOpen: (open: boolean) => void;
     setVendingOpen: (open: boolean) => void;
+    setKaraokeOpen: (open: boolean) => void;
+    setNeonBoardOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -223,6 +227,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isOrigamiOpen: false,
     isMetroCardOpen: false,
     isVendingOpen: false,
+    isKaraokeOpen: false,
+    isNeonBoardOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -403,6 +409,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setVendingOpen: (open: boolean) => {
         set({ isVendingOpen: open });
+    },
+
+    setKaraokeOpen: (open: boolean) => {
+        set({ isKaraokeOpen: open });
+    },
+
+    setNeonBoardOpen: (open: boolean) => {
+        set({ isNeonBoardOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
