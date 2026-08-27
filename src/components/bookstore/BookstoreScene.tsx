@@ -1187,7 +1187,7 @@ export default function BookstoreScene() {
                 vendingMachineRef.current?.obstacle,
                 origamiStudioRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
-                personalShelf.obstacle,
+                personalShelfRef.current?.obstacle,
                 cafeBaristaRef.current?.obstacle,
                 ...mangaLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
