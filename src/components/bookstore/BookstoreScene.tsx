@@ -14,6 +14,7 @@ import { createAnimeVendingMachine3D, VendingMachine3DResult } from './AnimeVend
 import { createVinylDJBooth, VinylDJResult } from './AnimeVinylDJ3D';
 import { applyAtmosphere } from './AtmospherePresets';
 import { createPetCompanion, PetCompanionResult } from './AvatarPetCompanion3D';
+import { createBookExchange3D, BookExchangeResult } from './BookExchange3D';
 import { createBookstoreEnvironment } from './BookstoreEnvironment';
 import BookstoreMiniMap from './BookstoreMiniMap';
 import { BookshelfObstacle } from './BookshelfGeometry';
@@ -44,6 +45,7 @@ import { createTokyoMetroTicketGate, MetroGateResult } from './TokyoMetroTicketG
 import TouchJoystick from './TouchJoystick';
 import { createTrophyShowcase, TrophyCaseResult } from './TrophyShowcase3D';
 import { createWindChimePavilion3D, WindChimePavilionResult } from './WindChimePavilion3D';
+import { createYukataWardrobe3D, YukataWardrobeResult } from './YukataWardrobe3D';
 import { createZenBonsaiGarden, BonsaiGardenResult } from './ZenBonsaiGarden3D';
 import { createZenKoiPond, ZenKoiPondResult } from './ZenKoiPond3D';
 
@@ -66,6 +68,8 @@ export default function BookstoreScene() {
     const neonBoardRef = useRef<NeonBoard3DResult | null>(null);
     const purikuraBoothRef = useRef<PurikuraBoothResult | null>(null);
     const figureShowcaseRef = useRef<FigureShowcaseResult | null>(null);
+    const yukataWardrobeRef = useRef<YukataWardrobeResult | null>(null);
+    const bookExchangeRef = useRef<BookExchangeResult | null>(null);
     const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
     const taikoDrumRef = useRef<TaikoDrum3DResult | null>(null);
     const windChimePavilionRef = useRef<WindChimePavilionResult | null>(null);
@@ -138,6 +142,8 @@ export default function BookstoreScene() {
         setTaikoOpen,
         setPurikuraOpen,
         setFigureShowcaseOpen,
+        setYukataOpen,
+        setBookExchangeOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -165,6 +171,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'yukata') {
+            setYukataOpen(true);
+        } else if (target.type === 'bookexchange') {
+            setBookExchangeOpen(true);
         } else if (target.type === 'purikura') {
             setPurikuraOpen(true);
         } else if (target.type === 'figureshowcase') {
@@ -256,6 +266,8 @@ export default function BookstoreScene() {
         setTaikoOpen,
         setPurikuraOpen,
         setFigureShowcaseOpen,
+        setYukataOpen,
+        setBookExchangeOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -352,6 +364,14 @@ export default function BookstoreScene() {
         const vendingMachine = createAnimeVendingMachine3D([18, 0, 2]);
         scene.add(vendingMachine.group);
         vendingMachineRef.current = vendingMachine;
+
+        const yukataWardrobe = createYukataWardrobe3D([-18, 0, -10]);
+        scene.add(yukataWardrobe.group);
+        yukataWardrobeRef.current = yukataWardrobe;
+
+        const bookExchange = createBookExchange3D([8, 0, -17]);
+        scene.add(bookExchange.group);
+        bookExchangeRef.current = bookExchange;
 
         const origamiStudio = createOrigamiStudio3D([-18, 0, 14]);
         scene.add(origamiStudio.group);
@@ -477,6 +497,8 @@ export default function BookstoreScene() {
             postBox.obstacle,
             metroGate.obstacle,
             vendingMachine.obstacle,
+            yukataWardrobe.obstacle,
+            bookExchange.obstacle,
             origamiStudio.obstacle,
             gachapon.obstacle,
             personalShelf.obstacle,
@@ -525,6 +547,28 @@ export default function BookstoreScene() {
             }
 
             if (floor === 1) {
+                if (yukataWardrobeRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        yukataWardrobeRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setYukataOpen(true);
+                        return;
+                    }
+                }
+
+                if (bookExchangeRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        bookExchangeRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setBookExchangeOpen(true);
+                        return;
+                    }
+                }
+
                 if (metroGateRef.current) {
                     const intersects = raycaster.intersectObjects(
                         metroGateRef.current.group.children,
@@ -932,6 +976,14 @@ export default function BookstoreScene() {
                     vendingMachineRef.current.update(delta);
                 }
 
+                if (yukataWardrobeRef.current && yukataWardrobeRef.current.group.visible) {
+                    yukataWardrobeRef.current.update(delta);
+                }
+
+                if (bookExchangeRef.current && bookExchangeRef.current.group.visible) {
+                    bookExchangeRef.current.update(delta);
+                }
+
                 if (origamiStudioRef.current && origamiStudioRef.current.group.visible) {
                     origamiStudioRef.current.update(delta);
                 }
@@ -1070,6 +1122,8 @@ export default function BookstoreScene() {
         setTaikoOpen,
         setPurikuraOpen,
         setFigureShowcaseOpen,
+        setYukataOpen,
+        setBookExchangeOpen,
     ]);
 
     useEffect(() => {
@@ -1141,6 +1195,8 @@ export default function BookstoreScene() {
         if (postBoxRef.current) postBoxRef.current.group.visible = currentFloor === 1;
         if (metroGateRef.current) metroGateRef.current.group.visible = currentFloor === 1;
         if (vendingMachineRef.current) vendingMachineRef.current.group.visible = currentFloor === 1;
+        if (yukataWardrobeRef.current) yukataWardrobeRef.current.group.visible = currentFloor === 1;
+        if (bookExchangeRef.current) bookExchangeRef.current.group.visible = currentFloor === 1;
         if (origamiStudioRef.current) origamiStudioRef.current.group.visible = currentFloor === 1;
         if (drawingTableRef.current) drawingTableRef.current.group.visible = currentFloor === 1;
         if (readingNookRef.current) readingNookRef.current.group.visible = currentFloor === 1;
@@ -1185,6 +1241,8 @@ export default function BookstoreScene() {
                 postBoxRef.current?.obstacle,
                 metroGateRef.current?.obstacle,
                 vendingMachineRef.current?.obstacle,
+                yukataWardrobeRef.current?.obstacle,
+                bookExchangeRef.current?.obstacle,
                 origamiStudioRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
                 personalShelfRef.current?.obstacle,

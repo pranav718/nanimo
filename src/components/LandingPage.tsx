@@ -13,6 +13,7 @@ import AnimeTriviaArcadeModal from './bookstore/AnimeTriviaArcadeModal';
 import AnimeVendingMachineModal from './bookstore/AnimeVendingMachineModal';
 import AnimeVinylDJModal from './bookstore/AnimeVinylDJModal';
 import AvatarCustomizerModal from './bookstore/AvatarCustomizerModal';
+import BookExchangeModal from './bookstore/BookExchangeModal';
 import BookInspect3D from './bookstore/BookInspect3D';
 import BookmarksDrawer from './bookstore/BookmarksDrawer';
 import BookstoreHUD from './bookstore/BookstoreHUD';
@@ -39,6 +40,7 @@ import TaikoDrumModal from './bookstore/TaikoDrumModal';
 import TokyoFireworksModal from './bookstore/TokyoFireworksModal';
 import TokyoMetroCardModal from './bookstore/TokyoMetroCardModal';
 import TrophyShowcaseModal from './bookstore/TrophyShowcaseModal';
+import YukataWardrobeModal from './bookstore/YukataWardrobeModal';
 
 const BookstoreScene = dynamic(() => import('./bookstore/BookstoreScene'), {
     ssr: false,
@@ -92,6 +94,8 @@ export default function LandingPage() {
             <TaikoDrumModal />
             <PurikuraBoothModal />
             <FigureShowcaseModal />
+            <YukataWardrobeModal />
+            <BookExchangeModal />
             <AmbientAudioPlayer />
         </main>
     );
