@@ -367,6 +367,26 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const yukataPos = new THREE.Vector3(-18, 0, -10);
+            if (this.position.distanceTo(yukataPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'yukata',
+                    id: 'yukata-1',
+                    name: 'Traditional Festival Yukata Dressing Mirror',
+                });
+                return;
+            }
+
+            const bookExchangePos = new THREE.Vector3(8, 0, -17);
+            if (this.position.distanceTo(bookExchangePos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'bookexchange',
+                    id: 'exchange-1',
+                    name: 'Community Manga Drop & Recommendation Corner',
+                });
+                return;
+            }
         } else if (floor === 2) {
             const jukeboxPos = new THREE.Vector3(-18, 0, -10);
             if (this.position.distanceTo(jukeboxPos) < 3.8) {
