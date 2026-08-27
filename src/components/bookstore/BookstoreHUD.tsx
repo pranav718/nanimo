@@ -47,6 +47,8 @@ export default function BookstoreHUD() {
         setKaraokeOpen,
         setNeonBoardOpen,
         setTaikoOpen,
+        setPurikuraOpen,
+        setFigureShowcaseOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -207,6 +209,20 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setPurikuraOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Purikura</span>
+                        </button>
+
+                        <button
+                            onClick={() => setFigureShowcaseOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Figures</span>
                         </button>
 
                         <button
@@ -472,6 +488,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'purikura'
+                                    ? 'Take Kawaii Purikura Photo Stickers'
+                                    : proximityTarget.type === 'figureshowcase'
+                                    ? 'Inspect Rare Anime Scale Figures'
                                     : proximityTarget.type === 'taiko'
                                     ? 'Strike Festival Taiko Drum'
                                     : proximityTarget.type === 'windchime'
@@ -571,16 +591,16 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Purikura Photo Booth</span>
+                                <span className="font-mono text-amber-300">Take Stickers</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Scale Figure Showcase</span>
+                                <span className="font-mono text-amber-300">Inspect Gallery</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Taiko Drum Rhythm</span>
                                 <span className="font-mono text-amber-300">Play Drum</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Karaoke Lounge</span>
-                                <span className="font-mono text-amber-300">Sing in Booth</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Hanabi Fireworks</span>
-                                <span className="font-mono text-amber-300">H</span>
                             </div>
                         </div>
 

@@ -448,6 +448,26 @@ export class CharacterController {
                 return;
             }
 
+            const purikuraPos = new THREE.Vector3(-8, 0, 14);
+            if (this.position.distanceTo(purikuraPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'purikura',
+                    id: 'purikura-1',
+                    name: 'Tokyo Purikura Photo Sticker Kiosk',
+                });
+                return;
+            }
+
+            const figuresPos = new THREE.Vector3(8, 0, 14);
+            if (this.position.distanceTo(figuresPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'figureshowcase',
+                    id: 'figures-1',
+                    name: 'Akihabara Scale Figure Showcase',
+                });
+                return;
+            }
+
             const seats: [number, number, number][] = [[-5.5, 0, -7], [5.5, 0, -7], [0, 0, -3]];
             for (const s of seats) {
                 const sVec = new THREE.Vector3(...s);
