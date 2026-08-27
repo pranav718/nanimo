@@ -21,6 +21,7 @@ import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import CosmicTelescopeModal from './bookstore/CosmicTelescopeModal';
 import CyberNeonBoardModal from './bookstore/CyberNeonBoardModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
+import FigureShowcaseModal from './bookstore/FigureShowcaseModal';
 import GachaponModal from './bookstore/GachaponModal';
 import LofiRadioModal from './bookstore/LofiRadioModal';
 import MangaReaderModal from './bookstore/MangaReaderModal';
@@ -30,6 +31,7 @@ import OmikujiFortuneModal from './bookstore/OmikujiFortuneModal';
 import OrigamiStudioModal from './bookstore/OrigamiStudioModal';
 import PetSelectorModal from './bookstore/PetSelectorModal';
 import PhotoModeModal from './bookstore/PhotoModeModal';
+import PurikuraBoothModal from './bookstore/PurikuraBoothModal';
 import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
@@ -88,6 +90,8 @@ export default function LandingPage() {
             <AnimeKaraokeModal />
             <CyberNeonBoardModal />
             <TaikoDrumModal />
+            <PurikuraBoothModal />
+            <FigureShowcaseModal />
             <AmbientAudioPlayer />
         </main>
     );

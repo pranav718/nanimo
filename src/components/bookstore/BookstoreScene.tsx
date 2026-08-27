@@ -24,6 +24,7 @@ import { createCyberNeonBoard3D, NeonBoard3DResult } from './CyberNeonBoard3D';
 import { createDirectoryTerminal, DirectoryTerminalResult } from './DirectoryTerminal3D';
 import { DynamicBooksManager } from './DynamicBooksManager';
 import { createElevator, ElevatorResult } from './ElevatorTransit';
+import { createFigureShowcase3D, FigureShowcaseResult } from './FigureShowcase3D';
 import { createGachaponMachine, GachaponMachineResult } from './GachaponMachine';
 import { createJukebox, JukeboxResult } from './Jukebox3D';
 import { createMangaDrawingTable, DrawingTableResult } from './MangaDrawingTable3D';
@@ -32,6 +33,7 @@ import { createMatchaTeaCart, TeaCartResult } from './MatchaTeaCart3D';
 import { createOmikujiShrine, ShrineResult } from './OmikujiShrine3D';
 import { createOrigamiStudio3D, OrigamiStudio3DResult } from './OrigamiStudio3D';
 import { createPersonalShelf, PersonalShelfResult } from './PersonalShelf';
+import { createPurikuraBooth3D, PurikuraBoothResult } from './PurikuraBooth3D';
 import { createRadioStation, RadioStationResult } from './RadioStation3D';
 import { createReadingNook, ReadingNookResult } from './ReadingNook3D';
 import { createRooftopFloorLayout, RooftopLayoutResult } from './RooftopFloorLayout';
@@ -62,6 +64,8 @@ export default function BookstoreScene() {
     const trophyCaseRef = useRef<TrophyCaseResult | null>(null);
     const karaokeStageRef = useRef<KaraokeStageResult | null>(null);
     const neonBoardRef = useRef<NeonBoard3DResult | null>(null);
+    const purikuraBoothRef = useRef<PurikuraBoothResult | null>(null);
+    const figureShowcaseRef = useRef<FigureShowcaseResult | null>(null);
     const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
     const taikoDrumRef = useRef<TaikoDrum3DResult | null>(null);
     const windChimePavilionRef = useRef<WindChimePavilionResult | null>(null);
@@ -132,6 +136,8 @@ export default function BookstoreScene() {
         setKaraokeOpen,
         setNeonBoardOpen,
         setTaikoOpen,
+        setPurikuraOpen,
+        setFigureShowcaseOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -159,6 +165,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'purikura') {
+            setPurikuraOpen(true);
+        } else if (target.type === 'figureshowcase') {
+            setFigureShowcaseOpen(true);
         } else if (target.type === 'taiko') {
             setTaikoOpen(true);
         } else if (target.type === 'windchime') {
@@ -244,6 +254,8 @@ export default function BookstoreScene() {
         setKaraokeOpen,
         setNeonBoardOpen,
         setTaikoOpen,
+        setPurikuraOpen,
+        setFigureShowcaseOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -391,6 +403,16 @@ export default function BookstoreScene() {
         neonBoard.group.visible = false;
         scene.add(neonBoard.group);
         neonBoardRef.current = neonBoard;
+
+        const purikuraBooth = createPurikuraBooth3D([-8, 0, 14]);
+        purikuraBooth.group.visible = false;
+        scene.add(purikuraBooth.group);
+        purikuraBoothRef.current = purikuraBooth;
+
+        const figureShowcase = createFigureShowcase3D([8, 0, 14]);
+        figureShowcase.group.visible = false;
+        scene.add(figureShowcase.group);
+        figureShowcaseRef.current = figureShowcase;
 
         const arcade = createAnimeTriviaArcade([-18, 0, 14]);
         arcade.group.visible = false;
@@ -627,6 +649,28 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 2) {
+                if (purikuraBoothRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        purikuraBoothRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setPurikuraOpen(true);
+                        return;
+                    }
+                }
+
+                if (figureShowcaseRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        figureShowcaseRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setFigureShowcaseOpen(true);
+                        return;
+                    }
+                }
+
                 if (karaokeStageRef.current) {
                     const intersects = raycaster.intersectObjects(
                         karaokeStageRef.current.group.children,
@@ -916,6 +960,14 @@ export default function BookstoreScene() {
                     neonBoardRef.current.update(delta);
                 }
 
+                if (purikuraBoothRef.current && purikuraBoothRef.current.group.visible) {
+                    purikuraBoothRef.current.update(delta);
+                }
+
+                if (figureShowcaseRef.current && figureShowcaseRef.current.group.visible) {
+                    figureShowcaseRef.current.update(delta);
+                }
+
                 if (arcadeRef.current && arcadeRef.current.group.visible) {
                     arcadeRef.current.update(delta);
                 }
@@ -1016,6 +1068,8 @@ export default function BookstoreScene() {
         setKaraokeOpen,
         setNeonBoardOpen,
         setTaikoOpen,
+        setPurikuraOpen,
+        setFigureShowcaseOpen,
     ]);
 
     useEffect(() => {
@@ -1099,6 +1153,8 @@ export default function BookstoreScene() {
         if (trophyCaseRef.current) trophyCaseRef.current.group.visible = currentFloor === 2;
         if (karaokeStageRef.current) karaokeStageRef.current.group.visible = currentFloor === 2;
         if (neonBoardRef.current) neonBoardRef.current.group.visible = currentFloor === 2;
+        if (purikuraBoothRef.current) purikuraBoothRef.current.group.visible = currentFloor === 2;
+        if (figureShowcaseRef.current) figureShowcaseRef.current.group.visible = currentFloor === 2;
         if (arcadeRef.current) arcadeRef.current.group.visible = currentFloor === 2;
 
         rooftopLayoutRef.current.group.visible = currentFloor === 3;
@@ -1131,7 +1187,7 @@ export default function BookstoreScene() {
                 vendingMachineRef.current?.obstacle,
                 origamiStudioRef.current?.obstacle,
                 gachaponRef.current?.obstacle,
-                personalShelfRef.current?.obstacle,
+                personalShelf.obstacle,
                 cafeBaristaRef.current?.obstacle,
                 ...mangaLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
@@ -1149,6 +1205,8 @@ export default function BookstoreScene() {
                 trophyCaseRef.current?.obstacle,
                 karaokeStageRef.current?.obstacle,
                 neonBoardRef.current?.obstacle,
+                purikuraBoothRef.current?.obstacle,
+                figureShowcaseRef.current?.obstacle,
                 arcadeRef.current?.obstacle,
                 ...animeLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
