@@ -21,6 +21,7 @@ import BookstorePassportModal from './bookstore/BookstorePassportModal';
 import CafeSommelierModal from './bookstore/CafeSommelierModal';
 import CosmicTelescopeModal from './bookstore/CosmicTelescopeModal';
 import CyberNeonBoardModal from './bookstore/CyberNeonBoardModal';
+import EmaPlaqueModal from './bookstore/EmaPlaqueModal';
 import EmoteRadialWheel from './bookstore/EmoteRadialWheel';
 import FigureShowcaseModal from './bookstore/FigureShowcaseModal';
 import GachaponModal from './bookstore/GachaponModal';
@@ -37,6 +38,7 @@ import ReadingGoalModal from './bookstore/ReadingGoalModal';
 import ShelfExportModal from './bookstore/ShelfExportModal';
 import StoreSearchModal from './bookstore/StoreSearchModal';
 import TaikoDrumModal from './bookstore/TaikoDrumModal';
+import TeaCeremonyModal from './bookstore/TeaCeremonyModal';
 import TokyoFireworksModal from './bookstore/TokyoFireworksModal';
 import TokyoMetroCardModal from './bookstore/TokyoMetroCardModal';
 import TrophyShowcaseModal from './bookstore/TrophyShowcaseModal';
@@ -96,6 +98,8 @@ export default function LandingPage() {
             <FigureShowcaseModal />
             <YukataWardrobeModal />
             <BookExchangeModal />
+            <TeaCeremonyModal />
+            <EmaPlaqueModal />
             <AmbientAudioPlayer />
         </main>
     );

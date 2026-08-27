@@ -25,6 +25,7 @@ import { createCyberNeonBoard3D, NeonBoard3DResult } from './CyberNeonBoard3D';
 import { createDirectoryTerminal, DirectoryTerminalResult } from './DirectoryTerminal3D';
 import { DynamicBooksManager } from './DynamicBooksManager';
 import { createElevator, ElevatorResult } from './ElevatorTransit';
+import { createEmaPlaque3D, EmaPlaqueResult } from './EmaPlaque3D';
 import { createFigureShowcase3D, FigureShowcaseResult } from './FigureShowcase3D';
 import { createGachaponMachine, GachaponMachineResult } from './GachaponMachine';
 import { createJukebox, JukeboxResult } from './Jukebox3D';
@@ -39,6 +40,7 @@ import { createRadioStation, RadioStationResult } from './RadioStation3D';
 import { createReadingNook, ReadingNookResult } from './ReadingNook3D';
 import { createRooftopFloorLayout, RooftopLayoutResult } from './RooftopFloorLayout';
 import { createTaikoDrum3D, TaikoDrum3DResult } from './TaikoDrum3D';
+import { createTeaCeremony3D, TeaCeremonyResult } from './TeaCeremony3D';
 import { ThirdPersonCamera } from './ThirdPersonCamera';
 import { createTokyoFireworks3D, Fireworks3DResult } from './TokyoFireworks3D';
 import { createTokyoMetroTicketGate, MetroGateResult } from './TokyoMetroTicketGate3D';
@@ -70,6 +72,8 @@ export default function BookstoreScene() {
     const figureShowcaseRef = useRef<FigureShowcaseResult | null>(null);
     const yukataWardrobeRef = useRef<YukataWardrobeResult | null>(null);
     const bookExchangeRef = useRef<BookExchangeResult | null>(null);
+    const teaCeremonyRef = useRef<TeaCeremonyResult | null>(null);
+    const emaPlaqueRef = useRef<EmaPlaqueResult | null>(null);
     const bonsaiGardenRef = useRef<BonsaiGardenResult | null>(null);
     const taikoDrumRef = useRef<TaikoDrum3DResult | null>(null);
     const windChimePavilionRef = useRef<WindChimePavilionResult | null>(null);
@@ -144,6 +148,8 @@ export default function BookstoreScene() {
         setFigureShowcaseOpen,
         setYukataOpen,
         setBookExchangeOpen,
+        setTeaCeremonyOpen,
+        setEmaOpen,
     } = useBookstoreStore();
 
     const handleInteract = useCallback(() => {
@@ -171,6 +177,10 @@ export default function BookstoreScene() {
             }
         } else if (target.type === 'terminal') {
             setFastTravelOpen(true);
+        } else if (target.type === 'teaceremony') {
+            setTeaCeremonyOpen(true);
+        } else if (target.type === 'emaplaque') {
+            setEmaOpen(true);
         } else if (target.type === 'yukata') {
             setYukataOpen(true);
         } else if (target.type === 'bookexchange') {
@@ -268,6 +278,8 @@ export default function BookstoreScene() {
         setFigureShowcaseOpen,
         setYukataOpen,
         setBookExchangeOpen,
+        setTeaCeremonyOpen,
+        setEmaOpen,
     ]);
 
     const handleTeleport = useCallback((x: number, z: number) => {
@@ -478,6 +490,16 @@ export default function BookstoreScene() {
         windChimePavilion.group.visible = false;
         scene.add(windChimePavilion.group);
         windChimePavilionRef.current = windChimePavilion;
+
+        const teaCeremony = createTeaCeremony3D([0, 0, -10]);
+        teaCeremony.group.visible = false;
+        scene.add(teaCeremony.group);
+        teaCeremonyRef.current = teaCeremony;
+
+        const emaPlaque = createEmaPlaque3D([-8, 0, 10]);
+        emaPlaque.group.visible = false;
+        scene.add(emaPlaque.group);
+        emaPlaqueRef.current = emaPlaque;
 
         const fireworksLauncher = createTokyoFireworks3D([-12, 0, -10]);
         fireworksLauncher.group.visible = false;
@@ -818,6 +840,28 @@ export default function BookstoreScene() {
                     }
                 }
             } else if (floor === 3) {
+                if (teaCeremonyRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        teaCeremonyRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setTeaCeremonyOpen(true);
+                        return;
+                    }
+                }
+
+                if (emaPlaqueRef.current) {
+                    const intersects = raycaster.intersectObjects(
+                        emaPlaqueRef.current.group.children,
+                        true
+                    );
+                    if (intersects.length > 0) {
+                        setEmaOpen(true);
+                        return;
+                    }
+                }
+
                 if (taikoDrumRef.current) {
                     const intersects = raycaster.intersectObjects(
                         taikoDrumRef.current.group.children,
@@ -1064,6 +1108,14 @@ export default function BookstoreScene() {
                     windChimePavilionRef.current.update(delta);
                 }
 
+                if (teaCeremonyRef.current && teaCeremonyRef.current.group.visible) {
+                    teaCeremonyRef.current.update(delta);
+                }
+
+                if (emaPlaqueRef.current && emaPlaqueRef.current.group.visible) {
+                    emaPlaqueRef.current.update(delta);
+                }
+
                 if (fireworksLauncherRef.current && fireworksLauncherRef.current.group.visible) {
                     fireworksLauncherRef.current.update(delta);
                 }
@@ -1124,6 +1176,8 @@ export default function BookstoreScene() {
         setFigureShowcaseOpen,
         setYukataOpen,
         setBookExchangeOpen,
+        setTeaCeremonyOpen,
+        setEmaOpen,
     ]);
 
     useEffect(() => {
@@ -1221,6 +1275,8 @@ export default function BookstoreScene() {
         if (bonsaiGardenRef.current) bonsaiGardenRef.current.group.visible = currentFloor === 3;
         if (taikoDrumRef.current) taikoDrumRef.current.group.visible = currentFloor === 3;
         if (windChimePavilionRef.current) windChimePavilionRef.current.group.visible = currentFloor === 3;
+        if (teaCeremonyRef.current) teaCeremonyRef.current.group.visible = currentFloor === 3;
+        if (emaPlaqueRef.current) emaPlaqueRef.current.group.visible = currentFloor === 3;
         if (fireworksLauncherRef.current) fireworksLauncherRef.current.group.visible = currentFloor === 3;
 
         if (elevatorRef.current) {
@@ -1282,6 +1338,8 @@ export default function BookstoreScene() {
                 bonsaiGardenRef.current?.obstacle,
                 taikoDrumRef.current?.obstacle,
                 windChimePavilionRef.current?.obstacle,
+                teaCeremonyRef.current?.obstacle,
+                emaPlaqueRef.current?.obstacle,
                 fireworksLauncherRef.current?.obstacle,
                 ...rooftopLayout.obstacles,
             ].filter(Boolean) as BookshelfObstacle[];
