@@ -581,6 +581,26 @@ export class CharacterController {
                 });
                 return;
             }
+
+            const teaCeremonyPos = new THREE.Vector3(0, 0, -10);
+            if (this.position.distanceTo(teaCeremonyPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'teaceremony',
+                    id: 'tea-1',
+                    name: 'Traditional Chanoyu Tea Ceremony Platform',
+                });
+                return;
+            }
+
+            const emaPos = new THREE.Vector3(-8, 0, 10);
+            if (this.position.distanceTo(emaPos) < 3.8) {
+                store.setProximityTarget({
+                    type: 'emaplaque',
+                    id: 'ema-1',
+                    name: 'Shrine Ema Prayer Plaque Wall',
+                });
+                return;
+            }
         }
 
         let nearestAisle: { genre: BookstoreGenre; distance: number } | null = null;

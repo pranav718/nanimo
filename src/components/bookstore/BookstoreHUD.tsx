@@ -51,6 +51,8 @@ export default function BookstoreHUD() {
         setFigureShowcaseOpen,
         setYukataOpen,
         setBookExchangeOpen,
+        setTeaCeremonyOpen,
+        setEmaOpen,
     } = useBookstoreStore();
 
     const floorNames: Record<number, { en: string; jp: string }> = {
@@ -211,6 +213,20 @@ export default function BookstoreHUD() {
                         >
                             <span>Search</span>
                             <kbd className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">⌘K</kbd>
+                        </button>
+
+                        <button
+                            onClick={() => setTeaCeremonyOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Tea Ritual</span>
+                        </button>
+
+                        <button
+                            onClick={() => setEmaOpen(true)}
+                            className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-3 py-1.5 text-xs font-semibold tracking-wider text-white/80 hover:bg-white/10 hover:text-white transition-all backdrop-blur-md"
+                        >
+                            <span>Ema Wish</span>
                         </button>
 
                         <button
@@ -504,6 +520,10 @@ export default function BookstoreHUD() {
                             <span className="text-sm font-semibold tracking-wide text-white">
                                 {proximityTarget.type === 'elevator'
                                     ? `Step into Glass Elevator (Currently ${currentFloor}F)`
+                                    : proximityTarget.type === 'teaceremony'
+                                    ? 'Partake in Traditional Chanoyu Matcha Ceremony'
+                                    : proximityTarget.type === 'emaplaque'
+                                    ? 'Carve & Hang Shrine Ema Wish Plaque'
                                     : proximityTarget.type === 'yukata'
                                     ? 'Try On Festival Yukata & Geta Clogs'
                                     : proximityTarget.type === 'bookexchange'
@@ -611,16 +631,16 @@ export default function BookstoreHUD() {
                                 <span className="font-mono text-amber-300">W, A, S, D / Arrow Keys</span>
                             </div>
                             <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Tea Ceremony</span>
+                                <span className="font-mono text-amber-300">Whisk Matcha</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                                <span className="text-white/80 font-medium">Shrine Ema Wall</span>
+                                <span className="font-mono text-amber-300">Hang Wish</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                                 <span className="text-white/80 font-medium">Festival Yukata</span>
                                 <span className="font-mono text-amber-300">Try On Robes</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Book Swap Corner</span>
-                                <span className="font-mono text-amber-300">Pin Slips</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                                <span className="text-white/80 font-medium">Purikura Photo Booth</span>
-                                <span className="font-mono text-amber-300">Take Stickers</span>
                             </div>
                         </div>
 

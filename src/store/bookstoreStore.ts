@@ -12,7 +12,7 @@ export interface AvatarCustomizationState {
 }
 
 export interface ProximityTarget {
-    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending' | 'karaoke' | 'neonboard' | 'taiko' | 'windchime' | 'purikura' | 'figureshowcase' | 'yukata' | 'bookexchange';
+    type: 'shelf' | 'cinema' | 'elevator' | 'podium' | 'gachapon' | 'jukebox' | 'personalshelf' | 'cafe' | 'seat' | 'quiz' | 'terminal' | 'soundboard' | 'sketchpad' | 'synth' | 'pond' | 'radio' | 'nook' | 'arcade' | 'telescope' | 'shrine' | 'teacart' | 'dj' | 'postbox' | 'trophy' | 'bonsai' | 'fireworks' | 'origami' | 'metrogate' | 'vending' | 'karaoke' | 'neonboard' | 'taiko' | 'windchime' | 'purikura' | 'figureshowcase' | 'yukata' | 'bookexchange' | 'teaceremony' | 'emaplaque';
     id: string;
     name: string;
     genre?: BookstoreGenre;
@@ -80,6 +80,8 @@ interface BookstoreStore {
     isFigureShowcaseOpen: boolean;
     isYukataOpen: boolean;
     isBookExchangeOpen: boolean;
+    isTeaCeremonyOpen: boolean;
+    isEmaOpen: boolean;
     activePet: PetCompanionType;
     activeEmote: AvatarEmote;
     readingMedia: AnimeMedia | null;
@@ -138,6 +140,8 @@ interface BookstoreStore {
     setFigureShowcaseOpen: (open: boolean) => void;
     setYukataOpen: (open: boolean) => void;
     setBookExchangeOpen: (open: boolean) => void;
+    setTeaCeremonyOpen: (open: boolean) => void;
+    setEmaOpen: (open: boolean) => void;
     setActivePet: (pet: PetCompanionType) => void;
     playEmote: (emote: AvatarEmote) => void;
     setReadingMedia: (media: AnimeMedia | null) => void;
@@ -244,6 +248,8 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
     isFigureShowcaseOpen: false,
     isYukataOpen: false,
     isBookExchangeOpen: false,
+    isTeaCeremonyOpen: false,
+    isEmaOpen: false,
     activePet: 'kitsune',
     activeEmote: null,
     readingMedia: null,
@@ -452,6 +458,14 @@ export const useBookstoreStore = create<BookstoreStore>((set, get) => ({
 
     setBookExchangeOpen: (open: boolean) => {
         set({ isBookExchangeOpen: open });
+    },
+
+    setTeaCeremonyOpen: (open: boolean) => {
+        set({ isTeaCeremonyOpen: open });
+    },
+
+    setEmaOpen: (open: boolean) => {
+        set({ isEmaOpen: open });
     },
 
     setActivePet: (pet: PetCompanionType) => {
